@@ -1,12 +1,13 @@
 package com.example.hotelmanagementsystem;
 
+
+import com.example.hotelmanagementsystem.dbconnection.DataAccessLayer;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-
 public class HMS extends Application {
     @Override
     public void start(Stage stage) throws IOException {
@@ -18,6 +19,12 @@ public class HMS extends Application {
     }
 
     public static void main(String[] args) {
+        final String dbname="postgres";
+        final String user="postgres";
+        final String pass = "1234";
+
+        DataAccessLayer db = new DataAccessLayer();
+        db.connection(dbname,user,pass);
         launch();
     }
 }
