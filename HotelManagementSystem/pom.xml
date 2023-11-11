@@ -166,7 +166,7 @@
                         <id>default-cli</id>
                         <configuration>
                             <mainClass>
-                                com.example.hotelmanagementsystem/com.example.hotelmanagementsystem.HMS
+                                com.example.hotelmanagementsystem/com.example.hotelmanagementsystem.userinterface.HMS
                             </mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
