@@ -1,10 +1,7 @@
 package com.example.hotelmanagementsystem.userinterface;
 
 
-import com.example.hotelmanagementsystem.userinterface.screen.BillingUI;
-import com.example.hotelmanagementsystem.userinterface.screen.CheckInOutUI;
-import com.example.hotelmanagementsystem.userinterface.screen.RoomManagementUI;
-import com.example.hotelmanagementsystem.userinterface.screen.RoomReservationsUI;
+import com.example.hotelmanagementsystem.userinterface.screen.*;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -42,9 +39,10 @@ public class HMS extends Application {
         Button openCheckInOutButton = createStyledButton("Check-In/Check-Out");
         Button openBillingButton = createStyledButton("Billing and Invoicing");
         Button openRoomManagementButton = createStyledButton("Room Management");
+        Button openGuestManagementButton = createStyledButton("Guest Management");
 
         // Add buttons and title to the main layout
-        mainLayout.getChildren().addAll(titleText, openReservationsButton, openCheckInOutButton, openBillingButton, openRoomManagementButton);
+        mainLayout.getChildren().addAll(titleText, openReservationsButton, openCheckInOutButton, openBillingButton, openRoomManagementButton,openGuestManagementButton);
 
         // Set the main layout as the scene content
         Scene scene = new Scene(mainLayout, 600, 400);
@@ -82,6 +80,9 @@ public class HMS extends Application {
                 break;
             case "Room Management":
                 openWindow(new RoomManagementUI(), "Room Management");
+                break;
+            case "Guest Management":
+                openWindow(new GuestProfileManagementUI(), "Guest Management");
                 break;
         }
     }
