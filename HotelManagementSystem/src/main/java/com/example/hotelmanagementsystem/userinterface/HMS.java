@@ -70,7 +70,7 @@ public class HMS extends Application {
     private void openModuleWindow(String moduleName) throws Exception {
         switch (moduleName) {
             case "Room Reservations":
-                openWindow(new RoomReservationsUI(), "Room Reservations");
+                openWindow(new RoomAvailabilityUI(), "Room Reservations");
                 break;
             case "Check-In/Check-Out":
                 openWindow(new CheckInOutUI(), "Check-In/Check-Out");
