@@ -1,0 +1,30 @@
+/* styles.css */
+
+.root {
+    -fx-background-color: #f0f0f0; /* Set background color */
+}
+
+.grid-pane {
+    -fx-background-color: #ffffff; /* Set background color for the grid pane */
+    -fx-border-color: #cccccc; /* Set border color for the grid pane */
+    -fx-border-width: 1px; /* Set border width for the grid pane */
+    -fx-padding: 10px; /* Set padding for the grid pane */
+}
+
+.label {
+    -fx-font-size: 14px; /* Set font size for labels */
+}
+
+.text-field, .password-field {
+    -fx-font-size: 14px; /* Set font size for text fields and password fields */
+}
+
+.button {
+    -fx-font-size: 14px; /* Set font size for buttons */
+    -fx-background-color: #4caf50; /* Set background color for buttons */
+    -fx-text-fill: #ffffff; /* Set text color for buttons */
+}
+
+.button:hover {
+    -fx-background-color: #45a049; /* Set background color on hover for buttons */
+}

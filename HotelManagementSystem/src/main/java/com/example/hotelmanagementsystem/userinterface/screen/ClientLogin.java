@@ -47,11 +47,10 @@ public class ClientLogin extends Application {
         loginButton.setOnAction(e -> handleLogin(usernameField.getText(), passwordField.getText()));
 
         // Create the scene
-        Scene scene = new Scene(grid, 300, 200);
+        Scene scene = new Scene(grid, 400, 300);
 
         // Set the scene to the stage
         primaryStage.setScene(scene);
-
         // Show the stage
         primaryStage.show();
     }

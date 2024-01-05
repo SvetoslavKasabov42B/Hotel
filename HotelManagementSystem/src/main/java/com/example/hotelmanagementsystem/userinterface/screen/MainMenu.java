@@ -29,7 +29,7 @@ public class MainMenu extends Application {
         Button managerReportsBtn = createStyledButton("MANAGER REPORTS", "#607D8B");
 
         // Set action for each button (you can replace the lambda expressions with your own logic)
-        accountManagerBtn.setOnAction(e -> System.out.println("Clicked ACCOUNT MANAGER"));
+        accountManagerBtn.setOnAction(e -> openMainMenuInSameStage());
         guestManagerBtn.setOnAction(e -> System.out.println("Clicked GUEST MANAGER"));
         reservationManagerBtn.setOnAction(e -> System.out.println("Clicked RESERVATION MANAGER"));
         housekeepingBtn.setOnAction(e -> System.out.println("Clicked HOUSEKEEPING"));
@@ -74,6 +74,13 @@ public class MainMenu extends Application {
                         "-fx-font-weight: bold;"
         );
         return button;
+    }
+    private void openMainMenuInSameStage() {
+        // Create a new instance of the MainMenuApp and call its start method
+        /*AccountManager AccountManager = new AccountManager();
+        Stage primaryStage = new Stage();
+        AccountManager.start(primaryStage);
+         */
     }
 }
 

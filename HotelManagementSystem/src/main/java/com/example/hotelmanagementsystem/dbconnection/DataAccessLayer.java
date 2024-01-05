@@ -16,11 +16,14 @@ public class DataAccessLayer {
         this.dbUrl = dbUrl;
         this.dbUser = dbUser;
         this.dbPassword = dbPassword;
+
     }
 
+
     public boolean checkAccount(String username, String password) {
+
         try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
-            String query = "SELECT * FROM hms.users WHERE username = ? AND password = ?";
+            String query = "SELECT * FROM users WHERE username = ? AND password = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setString(1, username);
                 preparedStatement.setString(2, password);
@@ -34,5 +37,5 @@ public class DataAccessLayer {
             // Handle the exception appropriately (logging, throw custom exception, etc.)
             return false;
         }
-    }
+   }
 }
