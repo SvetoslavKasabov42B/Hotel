@@ -14,8 +14,5 @@ module com.example.hotelmanagementsystem {
 
     exports com.example.hotelmanagementsystem.controller;
     opens com.example.hotelmanagementsystem.controller to javafx.fxml;
-    exports com.example.hotelmanagementsystem.userinterface;
-    opens com.example.hotelmanagementsystem.userinterface to javafx.fxml;
-    exports com.example.hotelmanagementsystem.userinterface.screen;
-    opens com.example.hotelmanagementsystem.userinterface.screen to javafx.fxml;
+    opens com.example.hotelmanagementsystem.userinterface.screen to javafx.graphics;
 }
