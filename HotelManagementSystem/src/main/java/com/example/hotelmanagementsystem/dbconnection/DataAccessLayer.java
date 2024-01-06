@@ -1,8 +1,12 @@
 package com.example.hotelmanagementsystem.dbconnection;
 
+import com.example.hotelmanagementsystem.misc.*;
+
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Phaser;
 
 public class DataAccessLayer {
 
@@ -171,5 +175,82 @@ public class DataAccessLayer {
             throw new RuntimeException(e);
         }
     }
+
+    public List<RoomReservation> getAllReservations() {
+        List<RoomReservation> reservations = new ArrayList<>();
+
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+            String query = "SELECT r.reservation_id, g.first_name, g.last_name, r.room_number, rm.room_type,r.checkin_date, r.checkout_date, g.pin " +
+                    "FROM hms.reservation r " +
+                    "JOIN hms.guests g ON r.guest_id = g.pin " +
+                    "JOIN hms.rooms rm ON r.room_number = rm.room_number";
+
+            try (Statement statement = connection.createStatement();
+                 ResultSet resultSet = statement.executeQuery(query)) {
+
+                while (resultSet.next()) {
+                    int reservationId = resultSet.getInt("reservation_id");
+                    String firstName = resultSet.getString("first_name");
+                    String lastName = resultSet.getString("last_name");
+                    int roomNumber = resultSet.getInt("room_number");
+                    String roomType = resultSet.getString("room_type");
+                    Date checkinDate = resultSet.getDate("checkin_date");
+                    Date checkoutDate = resultSet.getDate("checkout_date");
+
+                    Room room = new Room(roomNumber,roomType);
+                    RoomReservation reservation = new RoomReservation(room, reservationId, firstName, lastName,checkinDate, checkoutDate);
+                    reservations.add(reservation);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle database exception
+        }
+
+        return reservations;
+    }
+    public List<RoomReservation> getAvailableRooms(Date checkOutDate, Date checkInDate, int roomNumber) {
+        List<RoomReservation> availableRooms = new ArrayList<>();
+
+        // Your SQL query to retrieve available rooms
+        String query = "SELECT r.room_number, r.room_type " +
+                "FROM hms.rooms r " +
+                "WHERE r.room_number = ? " +
+                "AND NOT EXISTS ( " +
+                "    SELECT 1 " +
+                "    FROM hms.reservation res " +
+                "    WHERE res.room_number = r.room_number " +
+                "    AND (res.checkin_date BETWEEN ? AND ? " +
+                "         OR res.checkout_date BETWEEN ? AND ?) " +
+                ")";
+
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+            preparedStatement.setInt(1, roomNumber);
+            preparedStatement.setDate(2, new java.sql.Date(checkInDate.getTime()));
+            preparedStatement.setDate(3, new java.sql.Date(checkOutDate.getTime()));
+            preparedStatement.setDate(4, new java.sql.Date(checkInDate.getTime()));
+            preparedStatement.setDate(5, new java.sql.Date(checkOutDate.getTime()));
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    int availableRoomNumber = resultSet.getInt("room_number");
+                    String roomType = resultSet.getString("room_type");
+
+                    Room room = new Room(availableRoomNumber, roomType);
+                    RoomReservation roomR = new RoomReservation(room);
+                    availableRooms.add(roomR);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle database exception
+        }
+
+        return availableRooms;
+    }
+
+
 }
 

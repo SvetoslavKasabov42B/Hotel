@@ -31,7 +31,7 @@ public class MainMenu extends Application {
 
         // Set action for each button (you can replace the lambda expressions with your own logic)
         guestManagerBtn.setOnAction(e -> menuHandler.openGuestManager());
-        reservationManagerBtn.setOnAction(e -> System.out.println("Clicked RESERVATION MANAGER"));
+        reservationManagerBtn.setOnAction(e -> menuHandler.openReservationManager());
         housekeepingBtn.setOnAction(e -> System.out.println("Clicked HOUSEKEEPING"));
         rackRoomBtn.setOnAction(e -> System.out.println("Clicked RACK ROOM"));
         checkInBtn.setOnAction(e -> System.out.println("Clicked CHECK IN"));
