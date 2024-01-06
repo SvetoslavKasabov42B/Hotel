@@ -1,5 +1,6 @@
 package com.example.hotelmanagementsystem.userinterface.screen;
 
+import com.example.hotelmanagementsystem.controller.MenuHandler;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -10,6 +11,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class AdminMenu extends Application {
+    private MenuHandler menuHandler = new MenuHandler();
 
     public static void main(String[] args) {
         launch(args);
@@ -29,8 +31,8 @@ public class AdminMenu extends Application {
         Button managerReportsBtn = createStyledButton("MANAGER REPORTS", "#607D8B");
 
         // Set action for each button (you can replace the lambda expressions with your own logic)
-        accountManagerBtn.setOnAction(e -> openAccountManager());
-        guestManagerBtn.setOnAction(e -> System.out.println("Clicked GUEST MANAGER"));
+        accountManagerBtn.setOnAction(e -> menuHandler.openAccountManager());
+        guestManagerBtn.setOnAction(e -> menuHandler.openGuestManager());
         reservationManagerBtn.setOnAction(e -> System.out.println("Clicked RESERVATION MANAGER"));
         housekeepingBtn.setOnAction(e -> System.out.println("Clicked HOUSEKEEPING"));
         rackRoomBtn.setOnAction(e -> System.out.println("Clicked RACK ROOM"));
@@ -76,11 +78,5 @@ public class AdminMenu extends Application {
         return button;
     }
 
-    private void openAccountManager() {
-        // Create a new instance of the MainMenuApp and call its start method
-        AccountManager AccountManager = new AccountManager();
-        Stage primaryStage = new Stage();
-        AccountManager.start(primaryStage);
 
-    }
 }

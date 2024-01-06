@@ -2,6 +2,7 @@ package com.example.hotelmanagementsystem.userinterface.screen;
 import com.example.hotelmanagementsystem.dbconnection.DataAccessLayer;
 import javafx.application.Application;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -25,6 +26,7 @@ public class ClientLogin extends Application {
 
         // Create the grid pane for layout
         GridPane grid = new GridPane();
+        grid.setAlignment(Pos.CENTER);
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 20, 20, 20));
@@ -35,6 +37,15 @@ public class ClientLogin extends Application {
         Label passwordLabel = new Label("Password:");
         PasswordField passwordField = new PasswordField();
         loginButton = new Button("Login"); // Initialize loginButton
+
+        usernameLabel.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
+        passwordLabel.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
+        usernameField.setStyle("-fx-font-size: 14;");
+        passwordField.setStyle("-fx-font-size: 14;");
+        loginButton.setStyle(
+                "-fx-font-size: 14; " +
+                        "-fx-background-color: #4CAF50; " +
+                        "-fx-text-fill: white;");
 
         // Add components to the grid
         grid.add(usernameLabel, 0, 0);

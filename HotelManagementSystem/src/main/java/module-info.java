@@ -13,6 +13,6 @@ module com.example.hotelmanagementsystem {
     requires java.sql;
 
     exports com.example.hotelmanagementsystem.controller;
-    opens com.example.hotelmanagementsystem.controller to javafx.fxml;
     opens com.example.hotelmanagementsystem.userinterface.screen to javafx.graphics;
+    opens com.example.hotelmanagementsystem.controller to javafx.fxml, javafx.graphics;
 }
