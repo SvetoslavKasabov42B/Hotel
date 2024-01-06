@@ -9,7 +9,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class MainMenu extends Application {
+public class AdminMenu extends Application {
 
     public static void main(String[] args) {
         launch(args);
@@ -20,6 +20,7 @@ public class MainMenu extends Application {
         primaryStage.setTitle("Main Menu");
 
         // Create buttons for each menu item with different colors
+        Button accountManagerBtn = createStyledButton("ACCOUNT MANAGER", "#4CAF50");
         Button guestManagerBtn = createStyledButton("GUEST MANAGER", "#2196F3");
         Button reservationManagerBtn = createStyledButton("RESERVATION MANAGER", "#FF9800");
         Button housekeepingBtn = createStyledButton("HOUSEKEEPING", "#9C27B0");
@@ -28,6 +29,7 @@ public class MainMenu extends Application {
         Button managerReportsBtn = createStyledButton("MANAGER REPORTS", "#607D8B");
 
         // Set action for each button (you can replace the lambda expressions with your own logic)
+        accountManagerBtn.setOnAction(e -> openAccountManager());
         guestManagerBtn.setOnAction(e -> System.out.println("Clicked GUEST MANAGER"));
         reservationManagerBtn.setOnAction(e -> System.out.println("Clicked RESERVATION MANAGER"));
         housekeepingBtn.setOnAction(e -> System.out.println("Clicked HOUSEKEEPING"));
@@ -36,8 +38,8 @@ public class MainMenu extends Application {
         managerReportsBtn.setOnAction(e -> System.out.println("Clicked MANAGER REPORTS"));
 
         // Create HBox containers for left and right sides
-        HBox leftBox = new HBox(20, rackRoomBtn, guestManagerBtn, reservationManagerBtn);
-        HBox rightBox = new HBox(20, housekeepingBtn, checkInBtn, managerReportsBtn);
+        HBox leftBox = new HBox(20, accountManagerBtn, guestManagerBtn, reservationManagerBtn);
+        HBox rightBox = new HBox(20, housekeepingBtn, rackRoomBtn, checkInBtn, managerReportsBtn);
 
         // Set padding for both boxes
         leftBox.setPadding(new Insets(20));
@@ -74,5 +76,11 @@ public class MainMenu extends Application {
         return button;
     }
 
-}
+    private void openAccountManager() {
+        // Create a new instance of the MainMenuApp and call its start method
+        AccountManager AccountManager = new AccountManager();
+        Stage primaryStage = new Stage();
+        AccountManager.start(primaryStage);
 
+    }
+}

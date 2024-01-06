@@ -58,6 +58,7 @@ public class ClientLogin extends Application {
     private void handleLogin(String username, String password) {
         // Check for an existing account using the DAL
         if (dal.checkAccount(username, password)) {
+            String accountType = dal.getAccountType(username, password);
             // Account exists, navigate to the main menu
             System.out.println("Login successful!");
 
@@ -65,9 +66,17 @@ public class ClientLogin extends Application {
             Stage loginStage = (Stage) loginButton.getScene().getWindow();
             loginStage.close();
 
+            if ("Admin".equals(accountType)) {
+                openAdminMenuInSameStage();
+            } else if ("Receptionist".equals(accountType)) {
+                openMainMenuInSameStage();
+            } else {
+                System.out.println("Unknown account type");
+            }
+
             // Add code to open the main menu or perform other actions
             // For example, you can open the main menu in the same stage as follows:
-            openMainMenuInSameStage();
+
         } else {
             // Account doesn't exist, show an error message
             showAlert("Login Error", "Account does not exist", "Account username or password is incorrect.");
@@ -79,6 +88,13 @@ public class ClientLogin extends Application {
         MainMenu mainMenuApp = new MainMenu();
         Stage primaryStage = new Stage();
         mainMenuApp.start(primaryStage);
+    }
+
+    private void openAdminMenuInSameStage(){
+        //Create a new instance of the AdminMenu and call its start method
+        AdminMenu adminMenu = new AdminMenu();
+        Stage primaryStage=new Stage();
+        adminMenu.start(primaryStage);
     }
 
     private void showAlert(String title, String header, String content) {
