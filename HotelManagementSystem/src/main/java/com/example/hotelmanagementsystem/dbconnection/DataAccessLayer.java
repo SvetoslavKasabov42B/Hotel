@@ -6,7 +6,6 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Phaser;
 
 public class DataAccessLayer {
 
@@ -176,6 +175,24 @@ public class DataAccessLayer {
         }
     }
 
+    public List<String> getRoomTypes() {
+        List<String> roomTypes = new ArrayList<>();
+
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+            String query = "SELECT DISTINCT room_type FROM hms.rooms";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        roomTypes.add(resultSet.getString("room_type"));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace(); // Handle the exception appropriately
+        }
+
+        return roomTypes;
+    }
     public List<RoomReservation> getAllReservations() {
         List<RoomReservation> reservations = new ArrayList<>();
 
@@ -209,7 +226,64 @@ public class DataAccessLayer {
 
         return reservations;
     }
-    public List<RoomReservation> getAvailableRooms(Date checkOutDate, Date checkInDate, int roomNumber) {
+    public String getRoomTypeByNumber(int roomNumber) {
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+            String query = "SELECT room_type FROM hms.rooms WHERE room_number = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setInt(1, roomNumber);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        return resultSet.getString("room_type");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace(); // Handle the exception appropriately
+        }
+        return null;
+    }
+
+    public List<RoomReservation> getAvailableRooms(Date checkOutDate, Date checkInDate) {
+        List<RoomReservation> availableRooms = new ArrayList<>();
+
+        // Your SQL query to retrieve available rooms
+        String query = "SELECT r.room_number, r.room_type " +
+                "FROM hms.rooms r " +
+                "AND NOT EXISTS ( " +
+                "    SELECT 1 " +
+                "    FROM hms.reservation res " +
+                "    WHERE res.room_number = r.room_number " +
+                "    AND (res.checkin_date BETWEEN ? AND ? " +
+                "         OR res.checkout_date BETWEEN ? AND ?) " +
+                ")";
+
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+            preparedStatement.setDate(1, new java.sql.Date(checkInDate.getTime()));
+            preparedStatement.setDate(2, new java.sql.Date(checkOutDate.getTime()));
+            preparedStatement.setDate(3, new java.sql.Date(checkInDate.getTime()));
+            preparedStatement.setDate(4, new java.sql.Date(checkOutDate.getTime()));
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    int availableRoomNumber = resultSet.getInt("room_number");
+                    String roomType = resultSet.getString("room_type");
+
+                    Room room = new Room(availableRoomNumber, roomType);
+                    RoomReservation roomR = new RoomReservation(room);
+                    availableRooms.add(roomR);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle database exception
+        }
+
+        return availableRooms;
+    }
+
+    public List<RoomReservation> getRoomAvailability(Date checkOutDate, Date checkInDate, int roomNumber) {
         List<RoomReservation> availableRooms = new ArrayList<>();
 
         // Your SQL query to retrieve available rooms
@@ -251,6 +325,82 @@ public class DataAccessLayer {
         return availableRooms;
     }
 
+    public List<RoomReservation> getRoomsDateType(Date checkOutDate, Date checkInDate, String roomType) {
+        List<RoomReservation> emptyRooms = new ArrayList<>();
 
+        // Your SQL query to retrieve empty rooms
+        String query = "SELECT r.room_number, r.room_type " +
+                "FROM hms.rooms r " +
+                "WHERE r.room_type = ? " +
+                "AND NOT EXISTS ( " +
+                "    SELECT 1 " +
+                "    FROM hms.reservation res " +
+                "    WHERE res.room_number = r.room_number " +
+                "    AND (res.checkin_date BETWEEN ? AND ? " +
+                "         OR res.checkout_date BETWEEN ? AND ?) " +
+                ")";
+
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+            preparedStatement.setString(1, roomType);
+            preparedStatement.setDate(2, new java.sql.Date(checkInDate.getTime()));
+            preparedStatement.setDate(3, new java.sql.Date(checkOutDate.getTime()));
+            preparedStatement.setDate(4, new java.sql.Date(checkInDate.getTime()));
+            preparedStatement.setDate(5, new java.sql.Date(checkOutDate.getTime()));
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    int availableRoomNumber = resultSet.getInt("room_number");
+                    String roomTypeResult = resultSet.getString("room_type");
+
+                    Room room = new Room(availableRoomNumber, roomTypeResult);
+                    RoomReservation emptyRoomReservation = new RoomReservation(room);
+                    emptyRooms.add(emptyRoomReservation);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle database exception
+        }
+
+        return emptyRooms;
+    }
+
+    //need work
+    public List<RoomReservation> getEmptyRoomsAndReservationsTypeToday(String roomType, LocalDate date) {
+        List<RoomReservation> emptyRoomsAndReservations = new ArrayList<>();
+
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+            String query = "SELECT rm.room_number, rm.room_type, r.checkin_date, r.checkout_date " +
+                    "FROM hms.rooms rm " +
+                    "LEFT JOIN hms.reservation r ON rm.room_number = r.room_number AND (? BETWEEN r.checkin_date AND r.checkout_date) " +
+                    "WHERE rm.room_type = ? AND r.reservation_id IS NULL"; // Added condition for empty rooms
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setDate(1, Date.valueOf(date));
+                preparedStatement.setString(2, roomType);
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        int roomNumber = resultSet.getInt("room_number");
+                        String type = resultSet.getString("room_type");
+                        Date checkinDate = resultSet.getDate("checkin_date");
+                        Date checkoutDate = resultSet.getDate("checkout_date");
+
+                        Room room = new Room(roomNumber, roomType);
+                        RoomReservation roomReservation = new RoomReservation(room);
+                        roomReservation.setCheckinDate(checkinDate);
+                        roomReservation.setCheckoutDate(checkoutDate);
+                        emptyRoomsAndReservations.add(roomReservation);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace(); // Handle the exception appropriately
+        }
+
+        return emptyRoomsAndReservations;
+    }
 }
 

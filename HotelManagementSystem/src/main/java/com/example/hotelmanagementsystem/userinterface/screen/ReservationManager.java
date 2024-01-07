@@ -1,9 +1,7 @@
 package com.example.hotelmanagementsystem.userinterface.screen;
 
 import com.example.hotelmanagementsystem.dbconnection.DataAccessLayer;
-import com.example.hotelmanagementsystem.misc.Reservation;
 
-import com.example.hotelmanagementsystem.misc.Room;
 import com.example.hotelmanagementsystem.misc.RoomReservation;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -34,7 +32,7 @@ public class ReservationManager extends Application {
 
     private TextField roomNumberField;
 
-    private TextField roomTypeField;
+    private ComboBox<String> roomTypeComboBox;
 
     private TextField reservationNumberField;
 
@@ -76,8 +74,11 @@ public class ReservationManager extends Application {
         topGrid.add(roomNumberField, 3, 0);
 
         topGrid.add(new Label("Room Type:"), 2, 1);
-        roomTypeField = new TextField();
-        topGrid.add(roomTypeField, 3, 1);
+        roomTypeComboBox = new ComboBox<>();
+        List<String> roomTypes = dal.getRoomTypes();
+        roomTypes.add(0, null);
+        roomTypeComboBox.setItems(FXCollections.observableArrayList(roomTypes));
+        topGrid.add(roomTypeComboBox, 3, 1);
 
         topGrid.add(new Label("Reservation Number:"), 2, 2);
         reservationNumberField = new TextField();
@@ -156,33 +157,65 @@ public class ReservationManager extends Application {
 
         primaryStage.show();
 
+        roomNumberField.textProperty().addListener((obs, oldText, newText) -> {
+            if (!newText.isEmpty()) {
+                int roomNumber = Integer.parseInt(newText);
+                String roomType = dal.getRoomTypeByNumber(roomNumber);
+                if (roomType != null) {
+                    roomTypeComboBox.setValue(roomType);
+                }
+            }
+        });
+        roomTypeComboBox.valueProperty().addListener((obs, oldType, newType) -> {
+            System.out.println("Listener triggered. newType: " + newType);
+            if(newType != null){
+                if (!roomNumberField.getText().isEmpty() && checkInDateField.getValue() != null && checkOutDateField.getValue() != null) {
+
+                    //add
+                    // System.out.println("Skipping listener execution due to missing information.");
+                } else {
+                    LocalDate specificDate = LocalDate.now();
+                    List<RoomReservation> roomsAndReservations = dal.getEmptyRoomsAndReservationsTypeToday(newType, specificDate);
+                    updateTable(roomsAndReservations);
+                }
+            }else{
+                updateTable();
+            }
+
+        });
         checkAvailabilityBtn.setOnAction(e -> {
 
-            if (checkInDateField.getValue() != null && checkOutDateField.getValue() != null && !roomNumberField.getText().isEmpty()) {
-                int roomNumber = Integer.parseInt(roomNumberField.getText());
+            if (checkInDateField.getValue() != null && checkOutDateField.getValue() != null && roomTypeComboBox.getValue() !=null) {
                 LocalDate checkInDate = checkInDateField.getValue();
                 LocalDate checkOutDate = checkOutDateField.getValue();
-                List<RoomReservation> availableRooms = dal.getAvailableRooms(Date.valueOf(checkOutDate), Date.valueOf(checkInDate),roomNumber);
+                List<RoomReservation> roomAvailability;
 
+                if(!roomNumberField.getText().isEmpty()){
+                    int roomNumber = Integer.parseInt(roomNumberField.getText());
+                    roomAvailability = dal.getRoomAvailability(Date.valueOf(checkOutDate), Date.valueOf(checkInDate),roomNumber);
 
-                if (!availableRooms.isEmpty()){
-                    ObservableList<RoomReservation> roomObservableList = FXCollections.observableArrayList(availableRooms);
-                    table.setItems(roomObservableList);
+                }else{
+                    roomAvailability = dal.getRoomsDateType(Date.valueOf(checkOutDate), Date.valueOf(checkInDate), roomTypeComboBox.getValue());
+                }
+                if (!roomAvailability.isEmpty()){
+                    ObservableList<RoomReservation> roomObservableList = FXCollections.observableArrayList(roomAvailability);
+                    updateTable(roomObservableList);
                 } else {
                     showRoomNotAvailableAlert();
                     table.setItems(null);
                 }
-            }else{
+            }else {
                 showIncompleteInformationAlert();
             }
         });
     }
 
+
     private void showIncompleteInformationAlert() {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Incomplete Information");
         alert.setHeaderText(null);
-        alert.setContentText("Please fill in all the required information (Check-In Date, Check-Out Date, and Room Number).");
+        alert.setContentText("Please fill in all the required information (Dates and Room Number or Type).");
         alert.showAndWait();
     }
 
@@ -191,7 +224,6 @@ public class ReservationManager extends Application {
                 && !lastNameField.getText().isEmpty()
                 && !idNumberField.getText().isEmpty()
                 && !roomNumberField.getText().isEmpty()
-                && !roomTypeField.getText().isEmpty()
                 && !reservationNumberField.getText().isEmpty()
                 && checkInDateField.getValue() != null
                 && checkOutDateField.getValue() != null;
@@ -207,6 +239,10 @@ public class ReservationManager extends Application {
     private void updateTable() {
         List<RoomReservation> reservations = dal.getAllReservations();
         ObservableList<RoomReservation> reservationObservableList = FXCollections.observableArrayList(reservations);
+        table.setItems(reservationObservableList);
+    }
+    private void updateTable(List<RoomReservation> r) {
+        ObservableList<RoomReservation> reservationObservableList = FXCollections.observableArrayList(r);
         table.setItems(reservationObservableList);
     }
 
