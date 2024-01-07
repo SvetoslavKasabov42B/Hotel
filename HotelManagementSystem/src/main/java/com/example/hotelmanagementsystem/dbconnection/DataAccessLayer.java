@@ -402,5 +402,151 @@ public class DataAccessLayer {
 
         return emptyRoomsAndReservations;
     }
+    public List<RoomReservation> getEmptyRoomsAndReservationsToday(LocalDate date) {
+        List<RoomReservation> emptyRoomsAndReservations = new ArrayList<>();
+
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+            String query = "SELECT rm.room_number, rm.room_type, r.checkin_date, r.checkout_date " +
+                    "FROM hms.rooms rm " +
+                    "LEFT JOIN hms.reservation r ON rm.room_number = r.room_number AND (? BETWEEN r.checkin_date AND r.checkout_date) " +
+                    "WHERE r.reservation_id IS NULL"; // Added condition for empty rooms
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setDate(1, Date.valueOf(date));
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        int roomNumber = resultSet.getInt("room_number");
+                        String type = resultSet.getString("room_type");
+                        Date checkinDate = resultSet.getDate("checkin_date");
+                        Date checkoutDate = resultSet.getDate("checkout_date");
+
+                        Room room = new Room(roomNumber, getRoomTypeByNumber(roomNumber));
+                        RoomReservation roomReservation = new RoomReservation(room);
+                        roomReservation.setCheckinDate(checkinDate);
+                        roomReservation.setCheckoutDate(checkoutDate);
+                        emptyRoomsAndReservations.add(roomReservation);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace(); // Handle the exception appropriately
+        }
+
+        return emptyRoomsAndReservations;
+    }
+
+    public List<Room> getAllRooms() {
+        List<Room> rooms = new ArrayList<>();
+
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+            String query = "SELECT room_number, room_type FROM hms.rooms";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    int roomNumber = resultSet.getInt("room_number");
+                    String roomType = resultSet.getString("room_type");
+
+                    Room room = new Room(roomNumber, roomType);
+                    rooms.add(room);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return rooms;
+    }
+
+
+    public void updateRoomStatus(List<Room> rooms, LocalDate startDate, LocalDate endDate) {
+        String query = "SELECT room_number FROM hms.reservation " +
+                "WHERE " +
+                "(checkin_date BETWEEN ? AND ?) OR " +
+                "(checkout_date BETWEEN ? AND ?) OR " +
+                "(? BETWEEN checkin_date AND checkout_date)";
+
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+            preparedStatement.setDate(1, java.sql.Date.valueOf(startDate));
+            preparedStatement.setDate(2, java.sql.Date.valueOf(endDate));
+            preparedStatement.setDate(3, java.sql.Date.valueOf(startDate));
+            preparedStatement.setDate(4, java.sql.Date.valueOf(endDate));
+            preparedStatement.setDate(5, java.sql.Date.valueOf(startDate));
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    int occupiedRoomNumber = resultSet.getInt("room_number");
+                    // Find the corresponding room and mark it as occupied
+                    for (Room room : rooms) {
+                        if (room.getRoomNumber() == occupiedRoomNumber) {
+                            room.setOccupied(true);
+                            break;
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle the exception appropriately
+        }
+    }
+
+    public void updateRoomStatusToday(List<Room> rooms) {
+        String query = "SELECT room_number FROM hms.reservation WHERE (? BETWEEN checkin_date AND checkout_date) ";
+
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            LocalDate today = LocalDate.now();
+            preparedStatement.setDate(1, java.sql.Date.valueOf(today));
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    int occupiedRoomNumber = resultSet.getInt("room_number");
+                    // Find the corresponding room and mark it as occupied
+                    for (Room room : rooms) {
+                        if (room.getRoomNumber() == occupiedRoomNumber) {
+                            room.setOccupied(true);
+                            break;
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle the exception appropriately
+        }
+    }
+
+    public Reservation getReservationForRoomAndDate(int roomNumber, LocalDate date) {
+        String query = "SELECT r.* FROM hms.reservation r " +
+                "WHERE r.room_number = ? " +
+                "AND ? BETWEEN r.checkin_date AND r.checkout_date";
+
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+            preparedStatement.setInt(1, roomNumber);
+            preparedStatement.setDate(2, java.sql.Date.valueOf(date));
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    int reservationId = resultSet.getInt("reservation_id");
+                    String firstName = resultSet.getString("first_name");
+                    String lastName = resultSet.getString("last_name");
+                    Date checkinDate = resultSet.getDate("checkin_date");
+                    Date checkoutDate = resultSet.getDate("checkout_date");
+                    String pin = resultSet.getString("guest_id");
+
+                    return new Reservation(reservationId, firstName, lastName, roomNumber, checkinDate, checkoutDate, pin);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle the exception appropriately
+        }
+
+        return null; // Return null if there's no reservation for the specified room and date
+    }
 }
 

@@ -4,6 +4,7 @@ public class Room {
 
     private int roomNumber;
     private String roomType;
+    private boolean occupied = false ;
 
     public Room(int roomNumber, String roomType) {
         this.roomNumber = roomNumber;
@@ -25,5 +26,13 @@ public class Room {
 
     public void setRoomNumber(int roomNumber) {
         this.roomNumber = roomNumber;
+    }
+
+    public void setOccupied(boolean occupied) {
+        this.occupied = occupied;
+    }
+
+    public boolean isOccupied() {
+        return occupied;
     }
 }

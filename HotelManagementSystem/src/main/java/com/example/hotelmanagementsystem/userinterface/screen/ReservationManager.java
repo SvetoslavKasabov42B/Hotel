@@ -169,7 +169,7 @@ public class ReservationManager extends Application {
         roomTypeComboBox.valueProperty().addListener((obs, oldType, newType) -> {
             System.out.println("Listener triggered. newType: " + newType);
             if(newType != null){
-                if (!roomNumberField.getText().isEmpty() && checkInDateField.getValue() != null && checkOutDateField.getValue() != null) {
+                if (roomNumberField.getText().isEmpty() && checkInDateField.getValue() != null && checkOutDateField.getValue() != null) {
 
                     //add
                     // System.out.println("Skipping listener execution due to missing information.");
@@ -188,26 +188,42 @@ public class ReservationManager extends Application {
             if (checkInDateField.getValue() != null && checkOutDateField.getValue() != null && roomTypeComboBox.getValue() !=null) {
                 LocalDate checkInDate = checkInDateField.getValue();
                 LocalDate checkOutDate = checkOutDateField.getValue();
-                List<RoomReservation> roomAvailability;
 
-                if(!roomNumberField.getText().isEmpty()){
-                    int roomNumber = Integer.parseInt(roomNumberField.getText());
-                    roomAvailability = dal.getRoomAvailability(Date.valueOf(checkOutDate), Date.valueOf(checkInDate),roomNumber);
+                if(checkOutDate.isAfter(checkInDate)){
 
+                    List<RoomReservation> roomAvailability;
+
+                    if(!roomNumberField.getText().isEmpty()){
+                        int roomNumber = Integer.parseInt(roomNumberField.getText());
+                        roomAvailability = dal.getRoomAvailability(Date.valueOf(checkOutDate), Date.valueOf(checkInDate),roomNumber);
+
+                    }else{
+                        roomAvailability = dal.getRoomsDateType(Date.valueOf(checkOutDate), Date.valueOf(checkInDate), roomTypeComboBox.getValue());
+                    }
+                    if (!roomAvailability.isEmpty()){
+                        ObservableList<RoomReservation> roomObservableList = FXCollections.observableArrayList(roomAvailability);
+                        updateTable(roomObservableList);
+                    } else {
+                        showRoomNotAvailableAlert();
+                        table.setItems(null);
+                    }
                 }else{
-                    roomAvailability = dal.getRoomsDateType(Date.valueOf(checkOutDate), Date.valueOf(checkInDate), roomTypeComboBox.getValue());
-                }
-                if (!roomAvailability.isEmpty()){
-                    ObservableList<RoomReservation> roomObservableList = FXCollections.observableArrayList(roomAvailability);
-                    updateTable(roomObservableList);
-                } else {
-                    showRoomNotAvailableAlert();
-                    table.setItems(null);
+                    showInDateBiggerOutDateAlert();
                 }
             }else {
                 showIncompleteInformationAlert();
             }
+
         });
+
+    }
+
+    private void showInDateBiggerOutDateAlert() {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Date out of range");
+        alert.setHeaderText(null);
+        alert.setContentText("Check-in date cant be bigger than check-out date.");
+        alert.showAndWait();
     }
 
 
