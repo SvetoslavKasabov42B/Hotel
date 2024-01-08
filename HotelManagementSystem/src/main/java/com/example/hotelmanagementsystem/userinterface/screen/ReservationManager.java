@@ -1,5 +1,6 @@
 package com.example.hotelmanagementsystem.userinterface.screen;
 
+import com.example.hotelmanagementsystem.controller.MenuHandler;
 import com.example.hotelmanagementsystem.dbconnection.DataAccessLayer;
 
 import com.example.hotelmanagementsystem.misc.RoomReservation;
@@ -24,10 +25,6 @@ public class ReservationManager extends Application {
 
     private DataAccessLayer dal;
 
-    private TextField firstNameField;
-
-    private TextField lastNameField;
-
     private TextField idNumberField;
 
     private TextField roomNumberField;
@@ -42,6 +39,8 @@ public class ReservationManager extends Application {
 
     private TableView<RoomReservation> table;
     private Button checkAvailabilityBtn;
+    private Button guestButton;
+    private Button refresh;
 
     @Override
     public void start(Stage primaryStage) {
@@ -56,18 +55,9 @@ public class ReservationManager extends Application {
         topGrid.setVgap(10);
         topGrid.setPadding(new Insets(20, 20, 20, 20));
 
-
-        topGrid.add(new Label("First Name:"), 0, 0);
-        firstNameField = new TextField();
-        topGrid.add(firstNameField, 1, 0);
-
-        topGrid.add(new Label("Last Name:"), 0, 1);
-        lastNameField = new TextField();
-        topGrid.add(lastNameField, 1, 1);
-
-        topGrid.add(new Label("ID Number:"), 0, 2);
+        topGrid.add(new Label("ID Number:"), 0, 0);
         idNumberField = new TextField();
-        topGrid.add(idNumberField, 1, 2);
+        topGrid.add(idNumberField, 1, 0);
 
         topGrid.add(new Label("Room Number:"), 2, 0);
         roomNumberField = new TextField();
@@ -92,7 +82,12 @@ public class ReservationManager extends Application {
         checkOutDateField = new DatePicker();
         topGrid.add(checkOutDateField, 5, 1);
 
+        guestButton = new Button("Add Guest");
+        topGrid.add(guestButton,1, 1);
         checkAvailabilityBtn = new Button("Check Availability");
+
+        refresh = new Button("Refresh");
+        topGrid.add(refresh,5, 3);
 
         HBox rd = new HBox(10);
 
@@ -171,33 +166,35 @@ public class ReservationManager extends Application {
             if(newType != null){
                 if (roomNumberField.getText().isEmpty() && checkInDateField.getValue() != null && checkOutDateField.getValue() != null) {
 
-                    //add
-                    // System.out.println("Skipping listener execution due to missing information.");
-                } else {
-                    LocalDate specificDate = LocalDate.now();
-                    List<RoomReservation> roomsAndReservations = dal.getEmptyRoomsAndReservationsTypeToday(newType, specificDate);
+                    Date checkOutDate = Date.valueOf(checkOutDateField.getValue());
+                    Date checkInDate = Date.valueOf(checkInDateField.getValue());
+                    List<RoomReservation> roomsAndReservations = dal.getAvailableRooms(checkOutDate, checkInDate);
                     updateTable(roomsAndReservations);
                 }
-            }else{
-                updateTable();
             }
-
         });
+        guestButton.setOnAction(e -> openAddGuestWindow());
+
+        refresh.setOnAction(e -> {
+            updateTable();
+            checkInDateField.setValue(null);
+            checkOutDateField.setValue(null);
+        });
+
         checkAvailabilityBtn.setOnAction(e -> {
 
-            if (checkInDateField.getValue() != null && checkOutDateField.getValue() != null && roomTypeComboBox.getValue() !=null) {
+            if (checkInDateField.getValue() != null && checkOutDateField.getValue() != null ) {
                 LocalDate checkInDate = checkInDateField.getValue();
                 LocalDate checkOutDate = checkOutDateField.getValue();
-
                 if(checkOutDate.isAfter(checkInDate)){
 
-                    List<RoomReservation> roomAvailability;
+                    List<RoomReservation> roomAvailability = null;
 
                     if(!roomNumberField.getText().isEmpty()){
                         int roomNumber = Integer.parseInt(roomNumberField.getText());
                         roomAvailability = dal.getRoomAvailability(Date.valueOf(checkOutDate), Date.valueOf(checkInDate),roomNumber);
 
-                    }else{
+                    }else if (roomTypeComboBox.getValue() !=null){
                         roomAvailability = dal.getRoomsDateType(Date.valueOf(checkOutDate), Date.valueOf(checkInDate), roomTypeComboBox.getValue());
                     }
                     if (!roomAvailability.isEmpty()){
@@ -213,9 +210,12 @@ public class ReservationManager extends Application {
             }else {
                 showIncompleteInformationAlert();
             }
-
         });
+    }
 
+    private void openAddGuestWindow() {
+        MenuHandler menuHandler = new MenuHandler();
+        menuHandler.openGuestManager();
     }
 
     private void showInDateBiggerOutDateAlert() {
@@ -231,14 +231,12 @@ public class ReservationManager extends Application {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Incomplete Information");
         alert.setHeaderText(null);
-        alert.setContentText("Please fill in all the required information (Dates and Room Number or Type).");
+        alert.setContentText("Please fill in all the required information Check In Date / Check Out Date.");
         alert.showAndWait();
     }
 
     private boolean areAllFieldsFilled() {
-        return !firstNameField.getText().isEmpty()
-                && !lastNameField.getText().isEmpty()
-                && !idNumberField.getText().isEmpty()
+        return !idNumberField.getText().isEmpty()
                 && !roomNumberField.getText().isEmpty()
                 && !reservationNumberField.getText().isEmpty()
                 && checkInDateField.getValue() != null
