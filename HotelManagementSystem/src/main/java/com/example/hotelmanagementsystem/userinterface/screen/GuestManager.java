@@ -24,6 +24,10 @@ public class GuestManager extends Application {
 
     private ListView<String> guestList;
 
+
+    public GuestManager(DataAccessLayer dal) {
+        this.dal = dal;
+    }
     public static void main(String[] args) {
         launch(args);
     }

@@ -243,45 +243,6 @@ public class DataAccessLayer {
         return null;
     }
 
-    public List<RoomReservation> getAvailableRooms(Date checkOutDate, Date checkInDate) {
-        List<RoomReservation> availableRooms = new ArrayList<>();
-
-        // Your SQL query to retrieve available rooms
-        String query = "SELECT r.room_number, r.room_type " +
-                "FROM hms.rooms r " +
-                "AND NOT EXISTS ( " +
-                "    SELECT 1 " +
-                "    FROM hms.reservation res " +
-                "    WHERE res.room_number = r.room_number " +
-                "    AND (res.checkin_date BETWEEN ? AND ? " +
-                "         OR res.checkout_date BETWEEN ? AND ?) " +
-                ")";
-
-        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-
-            preparedStatement.setDate(1, new java.sql.Date(checkInDate.getTime()));
-            preparedStatement.setDate(2, new java.sql.Date(checkOutDate.getTime()));
-            preparedStatement.setDate(3, new java.sql.Date(checkInDate.getTime()));
-            preparedStatement.setDate(4, new java.sql.Date(checkOutDate.getTime()));
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    int availableRoomNumber = resultSet.getInt("room_number");
-                    String roomType = resultSet.getString("room_type");
-
-                    Room room = new Room(availableRoomNumber, roomType);
-                    RoomReservation roomR = new RoomReservation(room);
-                    availableRooms.add(roomR);
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            // Handle database exception
-        }
-
-        return availableRooms;
-    }
 
     public List<RoomReservation> getRoomAvailability(Date checkOutDate, Date checkInDate, int roomNumber) {
         List<RoomReservation> availableRooms = new ArrayList<>();
@@ -402,38 +363,6 @@ public class DataAccessLayer {
 
         return emptyRoomsAndReservations;
     }
-    public List<RoomReservation> getEmptyRoomsAndReservationsToday(LocalDate date) {
-        List<RoomReservation> emptyRoomsAndReservations = new ArrayList<>();
-
-        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
-            String query = "SELECT rm.room_number, rm.room_type, r.checkin_date, r.checkout_date " +
-                    "FROM hms.rooms rm " +
-                    "LEFT JOIN hms.reservation r ON rm.room_number = r.room_number AND (? BETWEEN r.checkin_date AND r.checkout_date) " +
-                    "WHERE r.reservation_id IS NULL"; // Added condition for empty rooms
-
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                preparedStatement.setDate(1, Date.valueOf(date));
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        int roomNumber = resultSet.getInt("room_number");
-                        String type = resultSet.getString("room_type");
-                        Date checkinDate = resultSet.getDate("checkin_date");
-                        Date checkoutDate = resultSet.getDate("checkout_date");
-
-                        Room room = new Room(roomNumber, getRoomTypeByNumber(roomNumber));
-                        RoomReservation roomReservation = new RoomReservation(room);
-                        roomReservation.setCheckinDate(checkinDate);
-                        roomReservation.setCheckoutDate(checkoutDate);
-                        emptyRoomsAndReservations.add(roomReservation);
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace(); // Handle the exception appropriately
-        }
-
-        return emptyRoomsAndReservations;
-    }
 
     public List<Room> getAllRooms() {
         List<Room> rooms = new ArrayList<>();
@@ -517,36 +446,100 @@ public class DataAccessLayer {
             // Handle the exception appropriately
         }
     }
+    // Add these methods to DataAccessLayer class
 
-    public Reservation getReservationForRoomAndDate(int roomNumber, LocalDate date) {
-        String query = "SELECT r.* FROM hms.reservation r " +
-                "WHERE r.room_number = ? " +
-                "AND ? BETWEEN r.checkin_date AND r.checkout_date";
+    public Guest getGuestByPin(String pin) {
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+            String query = "SELECT * FROM hms.guests WHERE pin = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setString(1, pin);
 
-        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-
-            preparedStatement.setInt(1, roomNumber);
-            preparedStatement.setDate(2, java.sql.Date.valueOf(date));
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    int reservationId = resultSet.getInt("reservation_id");
-                    String firstName = resultSet.getString("first_name");
-                    String lastName = resultSet.getString("last_name");
-                    Date checkinDate = resultSet.getDate("checkin_date");
-                    Date checkoutDate = resultSet.getDate("checkout_date");
-                    String pin = resultSet.getString("guest_id");
-
-                    return new Reservation(reservationId, firstName, lastName, roomNumber, checkinDate, checkoutDate, pin);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        return new Guest(
+                                resultSet.getString("pin"),
+                                resultSet.getString("first_name"),
+                                resultSet.getString("last_name"),
+                                resultSet.getString("phone_number"),
+                                resultSet.getString("gender"),
+                                resultSet.getString("email")
+                        );
+                    }
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            // Handle the exception appropriately
+            // Handle database exception
         }
 
-        return null; // Return null if there's no reservation for the specified room and date
+        return null;
     }
+
+    public int addGuestReservation(String pin, int reservationId, String firstName, String lastName, String phoneNumber, int roomNumber, String roomType) {
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+            String query = "INSERT INTO hms.guests_reservations (reservation_id, guest_pin, first_name, last_name, phone_number, room_number, room_type) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+                preparedStatement.setInt(1, reservationId);
+                preparedStatement.setString(2, pin);
+                preparedStatement.setString(3, firstName);
+                preparedStatement.setString(4, lastName);
+                preparedStatement.setString(5, phoneNumber);
+                preparedStatement.setInt(6, roomNumber);
+                preparedStatement.setString(7, roomType);
+
+                int rowsAffected = preparedStatement.executeUpdate();
+
+                if (rowsAffected > 0) {
+                    ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+                    if (generatedKeys.next()) {
+                        return generatedKeys.getInt(1); // Return the generated ID
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle database exception
+        }
+
+        return -1; // Return -1 if the insertion fails
+    }
+    public List<RoomReservation> getReservationsByGuestPin(String guestPin) {
+        List<RoomReservation> reservations = new ArrayList<>();
+
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+            String query = "SELECT r.reservation_id, g.first_name, g.last_name, r.room_number, rm.room_type, r.checkin_date, r.checkout_date " +
+                    "FROM hms.reservation r " +
+                    "JOIN hms.guests g ON r.guest_id = g.pin " +
+                    "JOIN hms.rooms rm ON r.room_number = rm.room_number " +
+                    "WHERE g.pin = ? AND r.checkout_date IS NULL"; // Include only active reservations
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setString(1, guestPin);
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        int reservationId = resultSet.getInt("reservation_id");
+                        String firstName = resultSet.getString("first_name");
+                        String lastName = resultSet.getString("last_name");
+                        int roomNumber = resultSet.getInt("room_number");
+                        String roomType = resultSet.getString("room_type");
+                        Date checkinDate = resultSet.getDate("checkin_date");
+                        Date checkoutDate = resultSet.getDate("checkout_date");
+
+                        Room room = new Room(roomNumber, roomType);
+                        RoomReservation reservation = new RoomReservation(room, reservationId, firstName, lastName, checkinDate, checkoutDate);
+                        reservations.add(reservation);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle database exception
+        }
+
+        return reservations;
+    }
+
+
 }
 

@@ -10,7 +10,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class AdminMenu extends Application {
+public class AdminMenu extends Application  {
     private MenuHandler menuHandler = new MenuHandler();
 
     public static void main(String[] args) {
@@ -35,7 +35,7 @@ public class AdminMenu extends Application {
         guestManagerBtn.setOnAction(e -> menuHandler.openGuestManager());
         reservationManagerBtn.setOnAction(e -> menuHandler.openReservationManager());
         housekeepingBtn.setOnAction(e -> System.out.println("Clicked HOUSEKEEPING"));
-        rackRoomBtn.setOnAction(e -> System.out.println("Clicked RACK ROOM"));
+        rackRoomBtn.setOnAction(e -> menuHandler.openRackRoom());
         checkInBtn.setOnAction(e -> System.out.println("Clicked CHECK IN"));
         managerReportsBtn.setOnAction(e -> System.out.println("Clicked MANAGER REPORTS"));
 
