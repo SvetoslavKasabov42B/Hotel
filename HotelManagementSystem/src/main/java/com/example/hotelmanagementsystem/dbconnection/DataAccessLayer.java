@@ -120,14 +120,15 @@ public class DataAccessLayer {
         List<String> guestList = new ArrayList<>();
 
         try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
-            String query = "SELECT pin, first_name, last_name FROM hms.guests";
+            String query = "SELECT pin, first_name, last_name, dob FROM hms.guests";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query);
                  ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
                     String pin = resultSet.getString("pin");
                     String firstName = resultSet.getString("first_name");
                     String lastName = resultSet.getString("last_name");
-                    guestList.add(pin + " " + firstName + " " + lastName);
+                    Date dob = resultSet.getDate("dob");
+                    guestList.add(pin + " " + firstName + " " + lastName + " " + dob);
                 }
             }
         } catch (SQLException e) {
@@ -137,10 +138,10 @@ public class DataAccessLayer {
         return guestList;
     }
 
-    public boolean insertGuest(String pin, String firstName, String lastName, String phoneNumber, String gender, String email) {
+    public boolean insertGuest(String pin, String firstName, String lastName, String phoneNumber, String gender, String email, LocalDate dob) {
         phoneNumber = "+" + phoneNumber;
         try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
-            String query = "INSERT INTO hms.guests (pin, first_name, last_name, phone_number, gender,email) VALUES (?, ?, ?, ?, ?,?)";
+            String query = "INSERT INTO hms.guests (pin, first_name, last_name, phone_number, gender, email, dob) VALUES (?, ?, ?, ?, ?, ?,?)";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setString(1, pin);
                 preparedStatement.setString(2, firstName);
@@ -148,6 +149,7 @@ public class DataAccessLayer {
                 preparedStatement.setString(4, phoneNumber);
                 preparedStatement.setString(5, gender);
                 preparedStatement.setString(6, email);
+                preparedStatement.setDate(7, java.sql.Date.valueOf(dob));
                 int rowsAffected = preparedStatement.executeUpdate();
                 return rowsAffected > 0;
             }
@@ -242,7 +244,6 @@ public class DataAccessLayer {
         }
         return null;
     }
-
 
     public List<RoomReservation> getRoomAvailability(Date checkOutDate, Date checkInDate, int roomNumber) {
         List<RoomReservation> availableRooms = new ArrayList<>();

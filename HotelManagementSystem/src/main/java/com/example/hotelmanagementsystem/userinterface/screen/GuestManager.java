@@ -11,6 +11,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.time.LocalDate;
+
 public class GuestManager extends Application {
 
     private DataAccessLayer dal;
@@ -21,6 +23,8 @@ public class GuestManager extends Application {
     private TextField lastNameField;
     private TextField emailField;
     private ChoiceBox<String> genderChoiceBox;
+
+    private DatePicker dobDataPicker;
 
     private ListView<String> guestList;
 
@@ -71,6 +75,9 @@ public class GuestManager extends Application {
         genderChoiceBox = new ChoiceBox<>(FXCollections.observableArrayList("male", "female"));
         genderChoiceBox.setValue("male");
 
+        dobDataPicker = new DatePicker();
+        dobDataPicker.setPromptText("Date of Birth");
+
         emailField = new TextField();
         emailField.setPromptText("email");
 
@@ -93,6 +100,7 @@ public class GuestManager extends Application {
                 firstNameField,
                 lastNameField,
                 genderChoiceBox,
+                dobDataPicker,
                 emailField,
                 insertButton,
                 deleteButton
@@ -119,7 +127,20 @@ public class GuestManager extends Application {
         String firstName = firstNameField.getText();
         String lastName = lastNameField.getText();
         String gender = genderChoiceBox.getValue();
+        LocalDate dob = dobDataPicker.getValue();
         String email = emailField.getText();
+
+        if (dob == null) {
+            showAlert("Input Error", "Date of Birth is required", "Please select a date of birth.");
+            return;
+        }
+
+        if (dal.insertGuest(pin, firstName, lastName, phoneNumber, gender, email, dob)) {
+            showAlert("Success", "Guest inserted successfully", "New guest has been added to the database.");
+            updateGuestList();
+        } else {
+            showAlert("Error", "Failed to insert guest", "An error occurred while inserting the guest.");
+        }
 
         if (pin.isEmpty() || phoneNumber.isEmpty() || firstName.isEmpty() || lastName.isEmpty() || email.isEmpty()) {
             showAlert("Input Error", "All fields are required", "Please fill in all the guest details.");
@@ -136,7 +157,7 @@ public class GuestManager extends Application {
             return;
         }
 
-        if (dal.insertGuest(pin, firstName, lastName, phoneNumber, gender, email)) {
+        if (dal.insertGuest(pin, firstName, lastName, phoneNumber, gender, email, dob)) {
             showAlert("Success", "Guest inserted successfully", "New guest has been added to the database.");
             updateGuestList();
         } else {
