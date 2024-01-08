@@ -3,6 +3,8 @@ package com.example.hotelmanagementsystem.userinterface.screen;
 import com.example.hotelmanagementsystem.controller.MenuHandler;
 import com.example.hotelmanagementsystem.dbconnection.DataAccessLayer;
 
+import com.example.hotelmanagementsystem.misc.Guest;
+import com.example.hotelmanagementsystem.misc.Room;
 import com.example.hotelmanagementsystem.misc.RoomReservation;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -233,6 +235,23 @@ public class ReservationManager extends Application {
                 showIncompleteInformationAlert();
             }
         });
+
+        createReservationButton.setOnAction(e ->{
+            if(areAllFieldsFilled()){
+                int roomNumber = Integer.parseInt(roomNumberField.getText());
+                int reservationID = 0;
+                String userId = idNumberField.getText();
+
+                Date checkInDate = Date.valueOf(checkInDateField.getValue());
+                Date checkOutDate = Date.valueOf(checkOutDateField.getValue());
+                Guest guest = dal.getGuestByPin(userId);
+                Room room = new Room(roomNumber, dal.getRoomTypeByNumber(roomNumber));
+                RoomReservation reservation = new RoomReservation(room, reservationID,guest.getFirstName(),guest.getLastName(),checkInDate,checkOutDate);
+                //dal.insertReservation(reservation);
+                updateTable();
+            }
+
+        });
     }
     private void updateTableBasedOnRoomTypeAndNumber() {
         LocalDate checkIn = checkInDateField.getValue();
@@ -265,7 +284,7 @@ public class ReservationManager extends Application {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Date out of range");
         alert.setHeaderText(null);
-        alert.setContentText("Check-in date cant be bigger than check-out date.");
+        alert.setContentText("Check-in date cant be bigger than check-out date or older than today.");
         alert.showAndWait();
     }
 
@@ -274,17 +293,33 @@ public class ReservationManager extends Application {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Incomplete Information");
         alert.setHeaderText(null);
-        alert.setContentText("Please fill in all the required information Check In Date / Check Out Date.");
+        alert.setContentText("Please fill in all the required information all required information ");
         alert.showAndWait();
     }
 
     private boolean areAllFieldsFilled() {
-        return !idNumberField.getText().isEmpty()
-                && !roomNumberField.getText().isEmpty()
-                && !reservationNumberField.getText().isEmpty()
-                && checkInDateField.getValue() != null
-                && checkOutDateField.getValue() != null;
+        if(!idNumberField.getText().isEmpty() && !roomNumberField.getText().isEmpty() && reservationNumberField.getText().isEmpty() && checkInDateField.getValue() != null && checkOutDateField.getValue() != null ){
+            LocalDate currentDate = LocalDate.now();
+            LocalDate checkinDate = checkInDateField.getValue();
+            LocalDate checkoutDate = checkOutDateField.getValue();
+            if (isTodayOrLater(currentDate, checkinDate, checkoutDate)) {
+                return true;
+            }else{
+                showInDateBiggerOutDateAlert();
+            }
+        }else{
+            showIncompleteInformationAlert();
+        }
+        return false;
     }
+
+    private boolean isTodayOrLater(LocalDate currentDate, LocalDate checkinDate, LocalDate checkoutDate) {
+        if (checkinDate.isAfter(currentDate) || checkinDate == currentDate && checkoutDate.isAfter(checkinDate)){
+            return true;
+
+        }else {return false;}
+    }
+
     private void showRoomNotAvailableAlert() {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Room Not Available");
