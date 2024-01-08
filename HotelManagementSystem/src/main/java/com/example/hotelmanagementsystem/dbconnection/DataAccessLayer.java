@@ -5,6 +5,7 @@ import com.example.hotelmanagementsystem.misc.*;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class DataAccessLayer {
@@ -581,5 +582,70 @@ public class DataAccessLayer {
     }
 
 
+    public List<RoomReservation> getReservationsTimeType(Date checkOutDate, Date checkInDate, String roomNumber) {
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+            String query = "SELECT * FROM hms.reservation WHERE room_number = ? AND (checkin_date <= ? AND checkout_date >= ?) OR (checkin_date >= ? AND checkin_date <= ?) OR (checkout_date >= ? AND checkout_date <= ?)";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setString(1, roomNumber);
+                statement.setDate(2, checkOutDate);
+                statement.setDate(3, checkInDate);
+                statement.setDate(4, checkInDate);
+                statement.setDate(5, checkOutDate);
+                statement.setDate(6, checkInDate);
+                statement.setDate(7, checkOutDate);
+
+                try (ResultSet resultSet = statement.executeQuery()) {
+
+                    return extractReservations(resultSet);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
+
+    public List<RoomReservation> getReservationsTimeTypeByType(Date checkOutDate, Date checkInDate, String roomType) {
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+            String query = "SELECT * FROM hms.reservation r JOIN hms.rooms rm ON r.room_number = rm.room_number WHERE room_type = ? AND ((checkin_date <= ? AND checkout_date >= ?) OR (checkin_date >= ? AND checkin_date <= ?) OR (checkout_date >= ? AND checkout_date <= ?))";
+
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setString(1, roomType);
+                statement.setDate(2, checkOutDate);
+                statement.setDate(3, checkInDate);
+                statement.setDate(4, checkInDate);
+                statement.setDate(5, checkOutDate);
+                statement.setDate(6, checkInDate);
+                statement.setDate(7, checkOutDate);
+
+
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    return extractReservations(resultSet);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
+
+    private List<RoomReservation> extractReservations(ResultSet resultSet) throws SQLException {
+        List<RoomReservation> reservations = new ArrayList<>();
+
+        while (resultSet.next()) {
+            Room r = new Room(resultSet.getInt("room_number"),resultSet.getString("room_type"));
+            RoomReservation reservation = new RoomReservation(r);
+            reservation.setReservationId(resultSet.getInt("reservation_id"));
+            reservation.setFirstName(resultSet.getString("first_name"));
+            reservation.setLastName(resultSet.getString("last_name"));
+            reservation.setCheckinDate(resultSet.getDate("checkin_date"));
+            reservation.setCheckoutDate(resultSet.getDate("checkout_date"));
+
+            reservations.add(reservation);
+
+        }
+
+        return reservations;
+    }
 }
 
