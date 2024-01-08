@@ -161,16 +161,34 @@ public class ReservationManager extends Application {
                 }
             }
         });
+        reservationNumberField.textProperty().addListener((obs, oldText, newText) -> {
+            if (!newText.isEmpty()) {
+                int reservationID = Integer.parseInt(newText);
+                updateTable(dal.getReservationsById(reservationID));
+            }
+        });
+        idNumberField.textProperty().addListener((obs, oldText, newText) -> {
+            if (!newText.isEmpty()) {
+                updateTable(dal.getReservationsByGuestId(newText));
+            }
+        });
         roomTypeComboBox.valueProperty().addListener((obs, oldType, newType) -> {
                 if (roomNumberField.getText().isEmpty() && checkInDateField.getValue() != null && checkOutDateField.getValue() != null) {
 
                     updateTableBasedOnRoomTypeAndNumber();
+                }else if(newType == null){
+                    updateTable();
+                }else{
+                    {updateTable(dal.getReservationsByRoomType(newType));}
                 }
         });
         guestButton.setOnAction(e -> openAddGuestWindow());
 
         refresh.setOnAction(e -> {
             updateTable();
+            idNumberField.setText("");
+            roomNumberField.setText("");
+            reservationNumberField.setText("");
             checkInDateField.setValue(null);
             checkOutDateField.setValue(null);
         });
@@ -223,16 +241,19 @@ public class ReservationManager extends Application {
         if (checkInDateField.getValue() != null && checkOutDateField.getValue() != null && checkOut.isAfter(checkIn)) {
             Date checkOutDate = Date.valueOf(checkOutDateField.getValue());
             Date checkInDate = Date.valueOf(checkInDateField.getValue());
-
+            List<RoomReservation> roomReservations;
             if (!roomNumberField.getText().isEmpty()) {
-                // Room number is provided, use it
-                List<RoomReservation> roomReservations = dal.getReservationsTimeType(checkOutDate, checkInDate, roomNumberField.getText());
-                updateTable(roomReservations);
+                //search by time period and room number
+                roomReservations = dal.getReservationsTimeNumber(checkOutDate, checkInDate, roomNumberField.getText());
             } else if (roomTypeComboBox.getValue() != null) {
-                // No room number, use room type
-                List<RoomReservation> roomReservations = dal.getReservationsTimeTypeByType(checkOutDate, checkInDate, roomTypeComboBox.getValue());
-                updateTable(roomReservations);
+                //search by time period and type
+                roomReservations = dal.getReservationsTimeType(checkOutDate, checkInDate, roomTypeComboBox.getValue());
+            }else{
+                //search by time period
+                roomReservations = dal.getReservationsTime(checkOutDate, checkInDate);
+
             }
+            updateTable(roomReservations);
         }
     }
     private void openAddGuestWindow() {

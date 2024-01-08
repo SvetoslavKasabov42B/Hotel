@@ -268,6 +268,42 @@ public class DataAccessLayer {
 
         return reservations;
     }
+    public List<RoomReservation> getReservationsByRoomType(String roomType) {
+        List<RoomReservation> reservations = new ArrayList<>();
+
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+            String query = "SELECT r.reservation_id, g.first_name, g.last_name, r.room_number, rm.room_type, r.checkin_date, r.checkout_date, g.pin " +
+                    "FROM hms.reservation r " +
+                    "JOIN hms.guests g ON r.guest_id = g.pin " +
+                    "JOIN hms.rooms rm ON r.room_number = rm.room_number " +
+                    "WHERE rm.room_type = ?"; // Add condition to filter by room type
+
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setString(1, roomType);
+
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        int reservationId = resultSet.getInt("reservation_id");
+                        String firstName = resultSet.getString("first_name");
+                        String lastName = resultSet.getString("last_name");
+                        int roomNumber = resultSet.getInt("room_number");
+                        Date checkinDate = resultSet.getDate("checkin_date");
+                        Date checkoutDate = resultSet.getDate("checkout_date");
+
+                        Room room = new Room(roomNumber, roomType);
+                        RoomReservation reservation = new RoomReservation(room, reservationId, firstName, lastName, checkinDate, checkoutDate);
+                        reservations.add(reservation);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle database exception
+        }
+
+        return reservations;
+    }
+
     public String getRoomTypeByNumber(int roomNumber) {
         try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
             String query = "SELECT room_type FROM hms.rooms WHERE room_number = ?";
@@ -582,7 +618,7 @@ public class DataAccessLayer {
     }
 
 
-    public List<RoomReservation> getReservationsTimeType(Date checkOutDate, Date checkInDate, String roomNumber) {
+    public List<RoomReservation> getReservationsTimeNumber(Date checkOutDate, Date checkInDate, String roomNumber) {
         try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
             String query = "SELECT * FROM hms.reservation WHERE room_number = ? AND (checkin_date <= ? AND checkout_date >= ?) OR (checkin_date >= ? AND checkin_date <= ?) OR (checkout_date >= ? AND checkout_date <= ?)";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
@@ -605,10 +641,17 @@ public class DataAccessLayer {
         }
     }
 
-    public List<RoomReservation> getReservationsTimeTypeByType(Date checkOutDate, Date checkInDate, String roomType) {
-        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
-            String query = "SELECT * FROM hms.reservation r JOIN hms.rooms rm ON r.room_number = rm.room_number WHERE room_type = ? AND ((checkin_date <= ? AND checkout_date >= ?) OR (checkin_date >= ? AND checkin_date <= ?) OR (checkout_date >= ? AND checkout_date <= ?))";
 
+    public List<RoomReservation> getReservationsTimeType(Date checkOutDate, Date checkInDate, String roomType) {
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+            String query = "SELECT r.*, g.*, rm.* " +
+                    "FROM hms.reservation r " +
+                    "JOIN hms.rooms rm ON r.room_number = rm.room_number " +
+                    "JOIN hms.guests g ON r.guest_id = g.pin " +
+                    "WHERE rm.room_type = ? AND " +
+                    "((r.checkin_date <= ? AND r.checkout_date >= ?) OR " +
+                    "(r.checkin_date >= ? AND r.checkin_date <= ?) OR " +
+                    "(r.checkout_date >= ? AND r.checkout_date <= ?))";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, roomType);
                 statement.setDate(2, checkOutDate);
@@ -617,7 +660,6 @@ public class DataAccessLayer {
                 statement.setDate(5, checkOutDate);
                 statement.setDate(6, checkInDate);
                 statement.setDate(7, checkOutDate);
-
 
                 try (ResultSet resultSet = statement.executeQuery()) {
                     return extractReservations(resultSet);
@@ -629,6 +671,30 @@ public class DataAccessLayer {
         }
     }
 
+    public List<RoomReservation> getReservationsTime(Date checkOutDate, Date checkInDate) {
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+            String query = "SELECT r.*, g.*, rm.* " +
+                    "FROM hms.reservation r " +
+                    "JOIN hms.rooms rm ON r.room_number = rm.room_number " +
+                    "JOIN hms.guests g ON r.guest_id = g.pin " +"WHERE (checkin_date <= ? AND checkout_date >= ?) OR (checkin_date >= ? AND checkin_date <= ?) OR (checkout_date >= ? AND checkout_date <= ?)";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setDate(1, checkOutDate);
+                statement.setDate(2, checkInDate);
+                statement.setDate(3, checkInDate);
+                statement.setDate(4, checkOutDate);
+                statement.setDate(5, checkInDate);
+                statement.setDate(6, checkOutDate);
+
+                try (ResultSet resultSet = statement.executeQuery()) {
+
+                    return extractReservations(resultSet);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
     private List<RoomReservation> extractReservations(ResultSet resultSet) throws SQLException {
         List<RoomReservation> reservations = new ArrayList<>();
 
@@ -643,6 +709,56 @@ public class DataAccessLayer {
 
             reservations.add(reservation);
 
+        }
+
+        return reservations;
+    }
+
+    public List<RoomReservation> getReservationsById(int reservationId) {
+        List<RoomReservation> reservations = new ArrayList<>();
+
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+            String query = "SELECT r.*, rm.*, g.* " +
+                    "FROM hms.reservation r " +
+                    "JOIN hms.guests g ON r.guest_id = g.pin " +
+                    "JOIN hms.rooms rm ON r.room_number = rm.room_number " +
+                    "WHERE r.reservation_id = ?"; // Add condition to filter by reservation ID
+
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setInt(1, reservationId);
+
+                try (ResultSet resultSet = statement.executeQuery()) {
+
+                    return extractReservations(resultSet);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle database exception
+        }
+
+        return reservations;
+    }
+    public List<RoomReservation> getReservationsByGuestId(String guestId) {
+        List<RoomReservation> reservations = new ArrayList<>();
+
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+            String query = "SELECT r.*, rm.*, g.* " +
+                    "FROM hms.reservation r " +
+                    "JOIN hms.guests g ON r.guest_id = g.pin " +
+                    "JOIN hms.rooms rm ON r.room_number = rm.room_number " +
+                    "WHERE r.guest_id = ?"; // Change the condition to filter by guest_id
+
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setString(1, guestId);
+
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    return extractReservations(resultSet);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle database exception
         }
 
         return reservations;
