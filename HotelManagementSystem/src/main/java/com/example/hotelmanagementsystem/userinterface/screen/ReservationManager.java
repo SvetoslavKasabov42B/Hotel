@@ -21,6 +21,7 @@ import javafx.stage.Stage;
 
 import java.time.LocalDate;
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ReservationManager extends Application {
@@ -157,9 +158,10 @@ public class ReservationManager extends Application {
         roomNumberField.textProperty().addListener((obs, oldText, newText) -> {
             if (!newText.isEmpty()) {
                 int roomNumber = Integer.parseInt(newText);
-                String roomType = dal.getRoomTypeByNumber(roomNumber);
-                if (roomType != null) {
+                if (doesRoomExit(roomNumber)) {
+                    String roomType = dal.getRoomTypeByNumber(roomNumber);
                     roomTypeComboBox.setValue(roomType);
+                    updateTableBasedOnRoomTypeAndNumber();
                 }
             }
         });
@@ -175,14 +177,7 @@ public class ReservationManager extends Application {
             }
         });
         roomTypeComboBox.valueProperty().addListener((obs, oldType, newType) -> {
-                if (roomNumberField.getText().isEmpty() && checkInDateField.getValue() != null && checkOutDateField.getValue() != null) {
-
-                    updateTableBasedOnRoomTypeAndNumber();
-                }else if(newType == null){
-                    updateTable();
-                }else{
-                    {updateTable(dal.getReservationsByRoomType(newType));}
-                }
+            updateTableBasedOnRoomTypeAndNumber();
         });
         guestButton.setOnAction(e -> openAddGuestWindow());
 
@@ -247,23 +242,34 @@ public class ReservationManager extends Application {
                 Guest guest = dal.getGuestByPin(userId);
                 Room room = new Room(roomNumber, dal.getRoomTypeByNumber(roomNumber));
                 RoomReservation reservation = new RoomReservation(room, reservationID,guest.getFirstName(),guest.getLastName(),checkInDate,checkOutDate);
-                //dal.insertReservation(reservation);
+                dal.insertReservation(reservation, guest);
                 updateTable();
             }
 
         });
     }
+
+    private boolean doesRoomExit(int roomNumber) {
+        if(dal.doesRoomExist(roomNumber)){
+            return true;
+        }
+        return false;
+    }
+
     private void updateTableBasedOnRoomTypeAndNumber() {
         LocalDate checkIn = checkInDateField.getValue();
         LocalDate checkOut = checkOutDateField.getValue();
+        List<RoomReservation> roomReservations = new ArrayList<RoomReservation>();
+
 
         if (checkInDateField.getValue() != null && checkOutDateField.getValue() != null && checkOut.isAfter(checkIn)) {
             Date checkOutDate = Date.valueOf(checkOutDateField.getValue());
             Date checkInDate = Date.valueOf(checkInDateField.getValue());
-            List<RoomReservation> roomReservations;
+
+
             if (!roomNumberField.getText().isEmpty()) {
                 //search by time period and room number
-                roomReservations = dal.getReservationsTimeNumber(checkOutDate, checkInDate, roomNumberField.getText());
+                roomReservations = dal.getReservationsTimeNumber(checkOutDate, checkInDate, Integer.parseInt(roomNumberField.getText()));
             } else if (roomTypeComboBox.getValue() != null) {
                 //search by time period and type
                 roomReservations = dal.getReservationsTimeType(checkOutDate, checkInDate, roomTypeComboBox.getValue());
@@ -272,8 +278,17 @@ public class ReservationManager extends Application {
                 roomReservations = dal.getReservationsTime(checkOutDate, checkInDate);
 
             }
-            updateTable(roomReservations);
+        }else{
+            if (!roomNumberField.getText().isEmpty()) {
+                //search by room number
+                int roomNumber = Integer.parseInt(roomNumberField.getText());
+                roomReservations = dal.getReservationsByRoomNumber(roomNumber);
+            } else if (roomTypeComboBox.getValue() != null) {
+                //search by type
+                roomReservations = dal.getReservationsByRoomType(roomTypeComboBox.getValue());
+            }
         }
+        updateTable(roomReservations);
     }
     private void openAddGuestWindow() {
         MenuHandler menuHandler = new MenuHandler();

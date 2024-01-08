@@ -618,11 +618,18 @@ public class DataAccessLayer {
     }
 
 
-    public List<RoomReservation> getReservationsTimeNumber(Date checkOutDate, Date checkInDate, String roomNumber) {
+    public List<RoomReservation> getReservationsTimeNumber(Date checkOutDate, Date checkInDate, int roomNumber) {
         try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
-            String query = "SELECT * FROM hms.reservation WHERE room_number = ? AND (checkin_date <= ? AND checkout_date >= ?) OR (checkin_date >= ? AND checkin_date <= ?) OR (checkout_date >= ? AND checkout_date <= ?)";
+            String query = "SELECT r.*, g.*, rm.* " +
+                    "FROM hms.reservation r " +
+                    "JOIN hms.rooms rm ON r.room_number = rm.room_number " +
+                    "JOIN hms.guests g ON r.guest_id = g.pin " +
+                    "WHERE r.room_number = ? AND " +
+                    "((checkin_date <= ? AND checkout_date >= ?) OR " +
+                    "(checkin_date >= ? AND checkin_date <= ?) OR " +
+                    "(checkout_date >= ? AND checkout_date <= ?))";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
-                statement.setString(1, roomNumber);
+                statement.setInt(1, roomNumber);
                 statement.setDate(2, checkOutDate);
                 statement.setDate(3, checkInDate);
                 statement.setDate(4, checkInDate);
@@ -762,6 +769,81 @@ public class DataAccessLayer {
         }
 
         return reservations;
+    }
+
+    public void insertReservation(RoomReservation reservation, Guest g) {
+
+        java.sql.Date checkIn = new java.sql.Date(reservation.getCheckinDate().getTime());
+        java.sql.Date checkOut = new java.sql.Date(reservation.getCheckoutDate().getTime());
+
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+            String query = "INSERT INTO hms.reservation (guest_id, room_number, checkin_date, checkout_date) VALUES (?, ?, ?, ?)";
+
+            try (PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+                statement.setString(1, g.getPin());
+                statement.setInt(2, reservation.getRoomNumber());
+                statement.setDate(3, checkIn);
+                statement.setDate(4, checkOut);
+
+                int affectedRows = statement.executeUpdate();
+
+                if (affectedRows > 0) {
+                    try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                        if (generatedKeys.next()) {
+                            int reservationId = generatedKeys.getInt(1);
+                            reservation.setReservationId(reservationId);
+                        } else {
+                            throw new SQLException("Creating reservation failed, no ID obtained.");
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle database exception
+        }
+    }
+
+    public boolean doesRoomExist(int roomNumber) {
+        String sql = "SELECT EXISTS (SELECT 1 FROM hms.rooms WHERE room_number = ?)";
+
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+            preparedStatement.setInt(1, roomNumber);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getBoolean(1);
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace(); // Handle the exception according to your needs
+        }
+
+        return false; // Default return value in case of an error
+    }
+
+    public List<RoomReservation> getReservationsByRoomNumber(int roomNumber) {
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+            String query = "SELECT r.*, g.*, rm.* " +
+                    "FROM hms.reservation r " +
+                    "JOIN hms.rooms rm ON r.room_number = rm.room_number " +
+                    "JOIN hms.guests g ON r.guest_id = g.pin " +
+                    "WHERE r.room_number = ? ";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setInt(1, roomNumber);
+
+                try (ResultSet resultSet = statement.executeQuery()) {
+
+                    return extractReservations(resultSet);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
     }
 }
 
