@@ -176,6 +176,45 @@ public class DataAccessLayer {
             throw new RuntimeException(e);
         }
     }
+    public List<RoomReservation> getAvailableRooms(Date checkOutDate, Date checkInDate) {
+        List<RoomReservation> availableRooms = new ArrayList<>();
+
+        // Your SQL query to retrieve available rooms
+        String query = "SELECT r.room_number, r.room_type " +
+                "FROM hms.rooms r " +
+                "AND NOT EXISTS ( " +
+                "    SELECT 1 " +
+                "    FROM hms.reservation res " +
+                "    WHERE res.room_number = r.room_number " +
+                "    AND (res.checkin_date BETWEEN ? AND ? " +
+                "         OR res.checkout_date BETWEEN ? AND ?) " +
+                ")";
+
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+            preparedStatement.setDate(1, new java.sql.Date(checkInDate.getTime()));
+            preparedStatement.setDate(2, new java.sql.Date(checkOutDate.getTime()));
+            preparedStatement.setDate(3, new java.sql.Date(checkInDate.getTime()));
+            preparedStatement.setDate(4, new java.sql.Date(checkOutDate.getTime()));
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    int availableRoomNumber = resultSet.getInt("room_number");
+                    String roomType = resultSet.getString("room_type");
+
+                    Room room = new Room(availableRoomNumber, roomType);
+                    RoomReservation roomR = new RoomReservation(room);
+                    availableRooms.add(roomR);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle database exception
+        }
+
+        return availableRooms;
+    }
 
     public List<String> getRoomTypes() {
         List<String> roomTypes = new ArrayList<>();
