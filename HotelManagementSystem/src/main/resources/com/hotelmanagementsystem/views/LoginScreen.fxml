@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
+
+<Pane fx:id="root" maxHeight="500.0" maxWidth="350.0" minHeight="500.0" minWidth="350.0" prefHeight="500.0" prefWidth="350.0" stylesheets="@../css/login.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hotelmanagementsystem.controller.LogInController">
+   <children>
+      <PasswordField fx:id="passwordTF" alignment="BASELINE_CENTER" layoutX="101.0" layoutY="303.0" />
+      <Separator layoutX="25.0" layoutY="249.0" prefHeight="3.0" prefWidth="300.0" />
+      <TextField fx:id="usernameTF" alignment="BASELINE_CENTER" layoutX="101.0" layoutY="214.0" />
+      <Button alignment="BASELINE_CENTER" layoutX="120.0" layoutY="385.0" mnemonicParsing="false" onAction="#LogInClicked" prefHeight="25.0" prefWidth="110.0" text="LOGIN" />
+      <Separator layoutX="25.0" layoutY="338.0" prefHeight="3.0" prefWidth="300.0" />
+      <Label alignment="BASELINE_CENTER" contentDisplay="CENTER" layoutX="112.0" layoutY="184.0" prefHeight="17.0" prefWidth="127.0" text="USERNAME">
+         <font>
+            <Font name="Serif Regular" size="20.0" />
+         </font>
+      </Label>
+      <Label alignment="BASELINE_CENTER" layoutX="121.0" layoutY="264.0" prefHeight="30.0" prefWidth="110.0" text="PASSWORD">
+         <font>
+            <Font name="Serif Regular" size="20.0" />
+         </font>
+      </Label>
+      <HBox alignment="TOP_CENTER" layoutX="75.0" layoutY="31.0" prefHeight="37.0" prefWidth="200.0">
+         <children>
+            <Label alignment="CENTER" prefHeight="35.0" prefWidth="95.0" text="My Hotel" textAlignment="CENTER">
+               <font>
+                  <Font name="Serif Regular" size="64.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+   </children>
+</Pane>

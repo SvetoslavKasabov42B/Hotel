@@ -1,0 +1,35 @@
+#root {
+    -fx-background-color: red;
+    -fx-background-image: url('bgpictures/loginbackground.jpg');
+    -fx-background-size: cover;
+    -fx-background-color: rgba(0, 0,0, 0.5); /* Adjust the last value for darkness (0-1) */
+}
+
+/* Style labels */
+.label {
+    -fx-text-fill: white;
+    -fx-stroke: black;
+    -fx-stroke-width: 2;
+    -fx-font-size: 20px;
+}
+
+/* Style text fields */
+.text-field {
+    -fx-background-color: rgba(255, 255, 255, 0.7); /* Adjust the last value for transparency (0-1) */
+    -fx-border-color: #a0a0a0; /* Set border color */
+    -fx-border-radius: 5; /* Set border radius */
+}
+
+/* Style buttons */
+.button {
+    -fx-background-color: #2999; /* Set button background color */
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-border-color: #45a049; /* Set button border color */
+    -fx-border-radius: 5; /* Set button border radius */
+}
+
+/* Hover effect for buttons */
+.button:hover {
+    -fx-background-color: #3278; /* Change background color on hover */
+}

@@ -12,8 +12,6 @@ module com.example.hotelmanagementsystem {
     requires com.almasb.fxgl.all;
     requires java.sql;
 
-    exports com.example.hotelmanagementsystem.controller;
-    opens com.example.hotelmanagementsystem.userinterface.screen to javafx.graphics;
-    opens com.example.hotelmanagementsystem.controller to javafx.fxml, javafx.graphics;
-    opens com.example.hotelmanagementsystem.misc to javafx.base;
+    opens com.hotelmanagementsystem.controller to javafx.fxml, javafx.graphics;
+    exports com.hotelmanagementsystem.userinterface;
 }
