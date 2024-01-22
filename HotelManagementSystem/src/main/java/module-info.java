@@ -11,6 +11,7 @@ module com.example.hotelmanagementsystem {
     requires eu.hansolo.tilesfx;
     requires com.almasb.fxgl.all;
     requires java.sql;
+    requires org.postgresql.jdbc;
 
     opens com.hotelmanagementsystem.controller to javafx.fxml, javafx.graphics;
     exports com.hotelmanagementsystem.userinterface;
