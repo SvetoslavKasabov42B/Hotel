@@ -28,7 +28,7 @@
       </Label>
       <HBox alignment="TOP_CENTER" layoutX="75.0" layoutY="31.0" prefHeight="37.0" prefWidth="200.0">
          <children>
-            <Label alignment="CENTER" prefHeight="35.0" prefWidth="95.0" text="My Hotel" textAlignment="CENTER">
+            <Label alignment="CENTER" prefHeight="35.0" prefWidth="200" text="Hotel Manager" textAlignment="CENTER">
                <font>
                   <Font name="Serif Regular" size="64.0" />
                </font>

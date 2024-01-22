@@ -1,0 +1,38 @@
+/* Pane background image */
+#root {
+    -fx-background-image: url('bgpictures/mainmenubg.jpg');
+    -fx-background-size: cover;
+    -fx-background-color: rgba(0, 0, 0, 0.5); /* Darkened overlay */
+
+}
+
+/* Transparent and darkened HBox */
+#hbox, #hbox1 {
+    -fx-background-color: rgba(0, 0, 0, 0.7); /* Transparent and darkened background */
+
+}
+
+/* Grey buttons with white text */
+.button {
+    -fx-background-color: white; /* Grey button background */
+    -fx-text-fill: black; /* White text color */
+    -fx-font-size: 20px; /* Font size */
+    -fx-border-color: black;
+    -fx-border: 2px;
+}
+.button:hover{
+    -fx-background-color: #eed2a4;
+    -fx-border-color: white;
+    -fx-border:2px;
+}
+
+.button:pressed{
+    -fx-background-color: #774101;
+}
+
+/* Labels with good readable font and white text */
+.label {
+    -fx-text-fill: white; /* White text color */
+    -fx-font-family: "Arial", sans-serif; /* Choose a readable font */
+    -fx-font-size: 1.5em;
+}
