@@ -3,12 +3,16 @@
     -fx-background-image: url('bgpictures/mainmenubg.jpg');
     -fx-background-size: cover;
     -fx-background-color: rgba(0, 0, 0, 0.5); /* Darkened overlay */
-
+    -fx-border-color: #a0a0a0; /* Set frame color */
+    -fx-border-width: 5px; /* Set frame width */
+    -fx-border-radius: 5px; /* Set frame corner radius */
 }
 
 /* Transparent and darkened HBox */
 #hbox, #hbox1 {
     -fx-background-color: rgba(0, 0, 0, 0.7); /* Transparent and darkened background */
+    -fx-border-color: #a0a0a0; /* Set frame color */
+    -fx-border-width: 5px; /* Set frame width */
 
 }
 

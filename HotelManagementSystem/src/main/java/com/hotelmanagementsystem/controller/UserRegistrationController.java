@@ -55,7 +55,7 @@ public class UserRegistrationController {
             System.out.println("\nNew user registered!");
             confirmationLabel.setText("New user registered!");
         }else{
-            System.out.println("Username already exists");
+            System.out.println("\nUsername already exists");
             confirmationLabel.setText("Username already exists");
         }
     }

@@ -38,11 +38,12 @@ public class UserQueries {
             preparedStatement.setString(2, user.getPassword());
             preparedStatement.setString(3, user.getRole());
 
-            preparedStatement.executeUpdate();
+           int rowsAffected = preparedStatement.executeUpdate();
+           return rowsAffected >0;
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
-        return true;
     }
 
 }

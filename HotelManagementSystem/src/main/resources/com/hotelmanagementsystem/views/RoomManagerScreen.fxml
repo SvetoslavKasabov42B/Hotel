@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
+
+<Pane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="900.0" stylesheets="@../css/RoomManager.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hotelmanagementsystem.controller.RoomManagerController">
+   <children>
+      <Button fx:id="refreshButton" layoutX="744.0" layoutY="103.0" mnemonicParsing="false" onAction="#refreshTable" prefHeight="25.0" prefWidth="110.0" text="Refresh">
+         <font>
+            <Font size="16.0" />
+         </font>
+      </Button>
+      <TableView fx:id="tableView" layoutX="14.0" layoutY="103.0" prefHeight="483.0" prefWidth="687.0">
+        <columns>
+          <TableColumn fx:id="RoomNumberC" prefWidth="160.0" text="Room Number" />
+          <TableColumn fx:id="RoomTypeC" minWidth="0.0" prefWidth="197.0" text="Room Type" />
+            <TableColumn fx:id="RoomStatusC" prefWidth="180.0" text="Room Status" />
+            <TableColumn fx:id="priceTableC" prefWidth="146.0" text="Room Price" />
+        </columns>
+      </TableView>
+      <Button fx:id="createButton" layoutX="742.0" layoutY="199.0" mnemonicParsing="false" onAction="#openRoomCreator" text="Create Room">
+         <font>
+            <Font size="16.0" />
+         </font>
+      </Button>
+      <TextField fx:id="roomNumber" layoutX="713.0" layoutY="330.0" />
+      <Button fx:id="deleteButton" layoutX="736.0" layoutY="404.0" mnemonicParsing="false" onAction="#deleteRoom" text="Delete Room">
+         <font>
+            <Font size="16.0" />
+         </font>
+      </Button>
+      <HBox fx:id="hbox" alignment="CENTER" prefHeight="75.0" prefWidth="900.0">
+         <children>
+            <Label text="Room Manager">
+               <font>
+                  <Font size="20.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+      <Label layoutX="723.0" layoutY="300.0" text="Room Number to Delete">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+   </children>
+</Pane>

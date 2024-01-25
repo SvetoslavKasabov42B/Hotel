@@ -1,0 +1,50 @@
+/* Pane background */
+#root {
+    -fx-background-color: beige;
+    -fx-border-color: grey;
+    -fx-border-width: 5px;
+    -fx-border-radius: 0px;
+}
+
+/* HBox */
+#hbox {
+    -fx-border-color: grey;
+    -fx-border-width: 5px;
+    -fx-border-radius: 0px;
+}
+
+/* Grey buttons with white text */
+.button {
+    -fx-background-color: #808080; /* Grey button background */
+    -fx-text-fill: white; /* White text color */
+    -fx-font-size: 16px; /* Font size */
+    -fx-border-color: white;
+    -fx-border-width: 2px;
+    -fx-border-radius: 2px;
+}
+
+/* Button hover and pressed effects */
+.button:hover {
+    -fx-background-color: #a0a0a0; /* Light grey on hover */
+}
+
+.button:pressed {
+    -fx-background-color: white; /* White on click */
+}
+
+/* TextField */
+#roomNumber {
+    -fx-font-size: 14px; /* Font size */
+}
+
+/* TableView */
+#tableView {
+    -fx-control-inner-background: #f5f5f5; /* Light grey background */
+    -fx-table-cell-border-color: #e0e0e0; /* Light border color between cells */
+    -fx-table-header-border-color: #d0d0d0; /* Light border color for header */
+    -fx-selection-bar: #66b2ff; /* Selection color */
+    -fx-selection-bar-non-focused: #66b2ff; /* Selection color when not focused */
+    -fx-background-insets: 0, 0 0 1 0, 1 1 2 1, 2 2 3 2; /* Insets for background and borders */
+    -fx-border-width: 3px;
+    -fx-border-color: grey;
+}

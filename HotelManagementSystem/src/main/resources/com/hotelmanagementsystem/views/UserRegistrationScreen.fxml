@@ -45,7 +45,7 @@
             <Font size="16.0" />
          </font>
       </Label>
-      <Label fx:id="confirmationLabel" layoutX="200.0" layoutY="500.0" textFill="#00ee43">
+      <Label fx:id="confirmationLabel" layoutX="120.0" layoutY="500.0" textFill="#006215">
          <font>
             <Font size="20.0" />
          </font>
