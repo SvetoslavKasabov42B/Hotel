@@ -1,5 +1,6 @@
 package com.hotelmanagementsystem.controller;
 
+import com.hotelmanagementsystem.userinterface.UserRegistrationMenu;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -7,7 +8,9 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 
-public class MainMenuController {
+import java.time.LocalDate;
+
+public class AdminMenuController {
 
     public HBox hbox1;
     @FXML
@@ -76,7 +79,18 @@ public class MainMenuController {
 
     @FXML
     void openUserManagementMenu(ActionEvent event) {
-
+        UserRegistrationMenu userRegistrationMenu = new UserRegistrationMenu();
+        userRegistrationMenu.showUserRegistrationMenu();
     }
+    @FXML
+    public void setLoggedInUsername(String username){
+        wellcomeMSG.setText("Wellcome, "+username + " !");
+    }
+
+    @FXML
+    public void setTodayDate() {
+        todayDate.setText(String.valueOf(LocalDate.now()));
+    }
+
 
 }

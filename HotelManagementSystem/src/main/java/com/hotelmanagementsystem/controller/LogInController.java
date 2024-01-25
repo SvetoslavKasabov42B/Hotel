@@ -1,7 +1,7 @@
 package com.hotelmanagementsystem.controller;
 
 import com.hotelmanagementsystem.dal.UserQueries;
-import com.hotelmanagementsystem.userinterface.MainMenu;
+import com.hotelmanagementsystem.userinterface.AdminMenu;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.PasswordField;
@@ -27,9 +27,9 @@ public class LogInController {
                 if (UserQueries.isValidUser(username, enteredPassword)) {
                         // Valid credentials, login successful
                         System.out.println("Login successful");
-                        MainMenu mainMenu= new MainMenu();
+                        AdminMenu adminMenu = new AdminMenu();
                         Stage primaryStage = new Stage();
-                        mainMenu.start(primaryStage);
+                        adminMenu.startMenu(primaryStage,username);
                 } else {
                         // Invalid credentials, show an error message
                         System.out.println("Invalid username or password");

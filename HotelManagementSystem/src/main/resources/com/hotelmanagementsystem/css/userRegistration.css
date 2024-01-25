@@ -1,0 +1,21 @@
+/* Set background color for the root pane */
+#root {
+    -fx-background-color: beige;
+    -fx-border-color: #a0a0a0; /* Set frame color */
+    -fx-border-width: 5px; /* Set frame width */
+    -fx-border-radius: 5px; /* Set frame corner radius */
+}
+
+/* Style HBox with a slightly darker color */
+
+/* Style the button with grey background and white text */
+#button {
+    -fx-background-color: #808080;
+    -fx-text-fill: white;
+}
+
+/* Hover effect for the button */
+#button:hover {
+    -fx-background-color: white;
+    -fx-text-fill: #808080;
+}
