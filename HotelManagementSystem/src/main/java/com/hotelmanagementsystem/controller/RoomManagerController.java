@@ -51,7 +51,9 @@ public class RoomManagerController {
 
     @FXML
     void deleteRoom(ActionEvent event) {
-        // Implement the deleteRoom logic
+       String rNumber = roomNumber.getText();
+       RoomQueries.deleteRoomByNumber(rNumber);
+       initialize();
     }
 
     @FXML

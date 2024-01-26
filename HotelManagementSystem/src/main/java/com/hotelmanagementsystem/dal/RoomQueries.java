@@ -15,6 +15,10 @@ public class RoomQueries {
     private static final String SELECT_ALL_ROOMS_QUERY =
             "SELECT room_number, room_type, status, price FROM hms.Rooms";
 
+    private static final String DELETE_ROOM_QUERY = "DELETE FROM hms.Rooms WHERE room_number = ?";
+
+    private static final String INSERT_ROOM_QUERY = "INSERT INTO hms.Rooms(room_number, room_type, status, price) VALUES(?,?,?, ?)";
+
     public static List<Room> getAllRooms() {
         List<Room> rooms = new ArrayList<>();
 
@@ -26,9 +30,9 @@ public class RoomQueries {
                 String roomNumber = resultSet.getString("room_number");
                 RoomType roomType = RoomType.valueOf(resultSet.getString("room_type"));
                 RoomStatus roomStatus = RoomStatus.valueOf(resultSet.getString("status"));
-                Double  price = resultSet.getDouble("price");
+                Double price = resultSet.getDouble("price");
 
-                Room room = new Room(roomNumber, roomType, roomStatus,price);
+                Room room = new Room(roomNumber, roomType, roomStatus, price);
                 rooms.add(room);
             }
         } catch (SQLException e) {
@@ -40,7 +44,6 @@ public class RoomQueries {
 
     public static boolean insertRoom(Room room) {
 
-        String INSERT_ROOM_QUERY = "INSERT INTO hms.Rooms(room_number, room_type, status, price) VALUES(?,?,?, ?)";
 
         try (Connection connection = DatabaseConnection.connect();
              PreparedStatement preparedStatement = connection.prepareStatement(INSERT_ROOM_QUERY)) {
@@ -52,6 +55,23 @@ public class RoomQueries {
 
             int rowsAffected = preparedStatement.executeUpdate();
             return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    public static boolean deleteRoomByNumber(String roomNumber) {
+        try (Connection connection = DatabaseConnection.connect();
+             PreparedStatement preparedStatement = connection.prepareStatement(DELETE_ROOM_QUERY)) {
+
+            preparedStatement.setString(1, roomNumber);
+            preparedStatement.executeUpdate();
+
+            int rowsAffected = preparedStatement.executeUpdate();
+            return rowsAffected > 0;
+
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
