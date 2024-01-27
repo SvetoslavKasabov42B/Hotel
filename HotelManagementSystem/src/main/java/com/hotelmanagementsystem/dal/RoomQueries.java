@@ -12,12 +12,43 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RoomQueries {
-    private static final String SELECT_ALL_ROOMS_QUERY =
-            "SELECT room_number, room_type, status, price FROM hms.Rooms";
+    private static final String SELECT_ALL_ROOMS_QUERY = "SELECT room_number, room_type, status, price FROM hms.Rooms";
 
     private static final String DELETE_ROOM_QUERY = "DELETE FROM hms.Rooms WHERE room_number = ?";
 
-    private static final String INSERT_ROOM_QUERY = "INSERT INTO hms.Rooms(room_number, room_type, status, price) VALUES(?,?,?, ?)";
+    private static final String INSERT_ROOM_QUERY = "INSERT INTO hms.Rooms(room_number, room_type, status, price) VALUES(?,?,?,?)";
+
+    private static final String SELECT_ROOM_BY_ID_QUERY =
+            "SELECT room_number, room_type, status, price FROM hms.Rooms WHERE room_number = ?";
+
+    public static Room getRoomById(String roomId) {
+        Room room = null;
+
+        try (Connection connection = DatabaseConnection.connect();
+             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_ROOM_BY_ID_QUERY)) {
+
+            preparedStatement.setString(1, roomId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    String roomNumber = resultSet.getString("room_number");
+                    String roomTypeString = resultSet.getString("room_type");
+                    String statusString = resultSet.getString("status");
+                    Double priceString = resultSet.getDouble("price");
+
+                    RoomType roomType = RoomType.valueOf(roomTypeString.toUpperCase());
+                    RoomStatus status = RoomStatus.valueOf(statusString.toUpperCase());
+
+                    room = new Room(roomNumber, roomType, status, priceString);
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return room;
+    }
 
     public static List<Room> getAllRooms() {
         List<Room> rooms = new ArrayList<>();
@@ -60,7 +91,6 @@ public class RoomQueries {
             return false;
         }
     }
-
 
     public static boolean deleteRoomByNumber(String roomNumber) {
         try (Connection connection = DatabaseConnection.connect();

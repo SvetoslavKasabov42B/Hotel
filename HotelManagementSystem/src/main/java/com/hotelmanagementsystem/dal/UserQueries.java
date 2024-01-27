@@ -8,6 +8,35 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 public class UserQueries {
     private static final String SELECT_USER_QUERY = "SELECT username FROM hms.Users WHERE username = ? AND password = ?";
+    private static final String SELECT_USER_BY_ID_QUERY =
+            "SELECT username, password, role FROM hms.Users WHERE username = ?";
+
+
+
+    public static User getUserById(String usernameToSet) {
+        User user = null;
+
+        try (Connection connection = DatabaseConnection.connect();
+             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_USER_BY_ID_QUERY)) {
+
+            preparedStatement.setString(1, usernameToSet);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    String username = resultSet.getString("username");
+                    String password = resultSet.getString("password");
+                    String role = resultSet.getString("role");
+
+                    user = new User(username, password, role);
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return user;
+    }
 
     // Method to check if the entered username and password match those in the database
     public static boolean isValidUser(String username, String password) {

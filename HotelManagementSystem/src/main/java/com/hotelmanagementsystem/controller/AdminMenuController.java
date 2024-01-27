@@ -1,5 +1,6 @@
 package com.hotelmanagementsystem.controller;
 
+import com.hotelmanagementsystem.userinterface.ReservationMenu;
 import com.hotelmanagementsystem.userinterface.RoomManagerMenu;
 import com.hotelmanagementsystem.userinterface.UserRegistrationMenu;
 import javafx.event.ActionEvent;
@@ -76,7 +77,8 @@ public class AdminMenuController {
 
     @FXML
     void openReservationsMenu(ActionEvent event) {
-
+        ReservationMenu reservationMenu = new ReservationMenu();
+        reservationMenu.showReservationMenu();
     }
 
     @FXML

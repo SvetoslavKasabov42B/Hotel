@@ -13,6 +13,9 @@ module com.example.hotelmanagementsystem {
     requires java.sql;
     requires org.postgresql.jdbc;
 
+    opens com.hotelmanagementsystem.object to javafx.base;
+
+
     opens com.hotelmanagementsystem.controller to javafx.fxml, javafx.graphics;
     exports com.hotelmanagementsystem.userinterface;
 }
